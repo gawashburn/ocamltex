@@ -1,12 +1,21 @@
 <todo version="0.1.19">
     <title>
-        OCamlTeX $Id: .todo 8 2006-05-21 21:07:49Z geoffw $ to-do list
+        OCamlTeX $Id: .todo 9 2006-05-21 21:09:49Z geoffw $ to-do list
     </title>
     <note priority="veryhigh" time="1147016747">
         Use exceptions rather than "exit 0".
     </note>
     <note priority="veryhigh" time="1147016788">
         Better error reporting on bad OCaml code.
+    </note>
+    <note priority="veryhigh" time="1148245705">
+        Fix bug with ocamlnewenvironment.
+    </note>
+    <note priority="veryhigh" time="1148245717">
+        Finish rewriting ocamltex.dtx.
+    </note>
+    <note priority="veryhigh" time="1148245735">
+        Finish writing README.txt.
     </note>
     <note priority="high" time="1147016774">
         Port to Haskell and Standard ML?
