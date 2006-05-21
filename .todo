@@ -1,0 +1,17 @@
+<todo version="0.1.19">
+    <title>
+        OCamlTeX $Id: .todo 8 2006-05-21 21:07:49Z geoffw $ to-do list
+    </title>
+    <note priority="veryhigh" time="1147016747">
+        Use exceptions rather than "exit 0".
+    </note>
+    <note priority="veryhigh" time="1147016788">
+        Better error reporting on bad OCaml code.
+    </note>
+    <note priority="high" time="1147016774">
+        Port to Haskell and Standard ML?
+    </note>
+    <note priority="medium" time="1147016767">
+        Write high-level library for creating "TeX" rather than always working with strings.
+    </note>
+</todo>
