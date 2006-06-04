@@ -648,7 +648,7 @@
 % Section~\ref{sec:implementation} is split into two main parts.
 % Section~\ref{sec:ocamlmacros} presents the source code for \ocamlmac,
 % the \LaTeX{} side of \OCamlTeX, and Section~\ref{sec:ocamltex} presents
-% the source code for \ocamltex, the Perl side of \OCamlTeX\@.
+% the source code for \ocamltex, the OCaml side of \OCamlTeX\@.
 % \makeatletter
 % \@ifundefined{ocamlmaclines}{}{^^A
 %   \newcount\ocamltex@lines
@@ -659,12 +659,12 @@
 %   is only \the\ocamltex@lines{} lines of OCaml.
 % }
 % \makeatother
-% \ocamltex{} is fairly straightforward OCaml code and shouldn't be too
-% difficult to understand by anyone comfortable with Perl programming.
-% \ocamlmac, in contrast, contains a bit of \LaTeX{} trickery and is
+% \ocamltex is fairly straightforward OCaml code and shouldn't be too
+% difficult to understand by anyone comfortable with OCaml programming.
+% \ocamlmac, in contrast, contains a bit of {\LaTeX} trickery and is
 % probably impenetrable to anyone who hasn't already tried his hand at
 % \LaTeX{} programming.  Fortunately for the reader, the code is
-% profusely commented so the aspiring \LaTeX{} guru may yet learn
+% profusely commented so the aspiring {\LaTeX} guru may yet learn
 % something from it.
 %
 % After documenting the \ocamlmac and \ocamltex source code, a few
@@ -696,9 +696,9 @@
 % register.  The continuation function, which also takes no arguments,
 % ends the group begun in the first function and proceeds using the
 % correctly |\catcode|d token register.  This technique appears in
-% |\plmac@haveargs| and |\plmac@havecode| and in a simpler form
+% |\mlmac@haveargs| and |\mlmac@havecode| and in a simpler form
 % (i.e.,~without the need for storing the argument) in
-% |\plmac@write@perl| and |\plmac@write@perl@i|.
+% |\mlmac@write@ocaml| and |\mlmac@write@ocaml@i|.
 %
 % Iterating over a macro's arguments is hindered by \TeX's requirement
 % that ``|#|'' be followed by a number or another ``|#|''.  The
@@ -707,141 +707,141 @@
 % unexpandable, then to define a macro that uses that variable followed
 % by a loop variable, and finally to expand the loop variable and |\let|
 % the |\relax|ed variable be ``|#|'' right before invoking the macro.
-% This technique appears in |\plmac@havecode|.
+% This technique appears in |\mlmac@havecode|.
 %
-% I hope you find reading the \perlmac{} source code instructive.
+% I hope you find reading the {\ocamlmac} source code instructive.
 % Writing it certainly was.
 %
 %
 % \subsubsection{Package initialization}
 % \label{sec:package-init}
 %
-% \PerlTeX{} defines six macros that are used for communication between
-% Perl and \LaTeX\@.  |\plmac@tag| is a string of characters that should
+% \OcamlTeX defines six macros that are used for communication between
+% OCaml and \LaTeX\@.  |\mllmac@tag| is a string of characters that should
 % never occur within one of the user's macro names, macro arguments, or
-% macro bodies.  \perltex{} therefore defines |\plmac@tag| as a long
-% string of random uppercase letters.  |\plmac@tofile| is the name of a
-% file used for communication from \LaTeX{} to Perl.  |\plmac@fromfile|
-% is the name of a file used for communication from Perl to \LaTeX.
-% |\plmac@toflag| signals that |\plmac@tofile| can be read safely.
-% |\plmac@fromflag| signals that |\plmac@fromfile| can be read safely.
-% |\plmac@doneflag| signals that |\plmac@fromflag| has been deleted.
+% macro bodies.  \ocamltex therefore defines |\mlmac@tag| as a long
+% string of random uppercase letters.  |\mlmac@tofile| is the name of a
+% file used for communication from \LaTeX{} to OCaml.  |\mlmac@fromfile|
+% is the name of a file used for communication from OCaml to \LaTeX.
+% |\mlmac@toflag| signals that |\mlmac@tofile| can be read safely.
+% |\mlmac@fromflag| signals that |\mlmac@fromfile| can be read safely.
+% |\mlmac@doneflag| signals that |\mlmac@fromflag| has been deleted.
 % Table~\ref{tbl:variables} lists all of these variables along with the
-% value assigned to each by \perltex.
+% value assigned to each by \ocamltex.
 %
 % \begin{table}[htbp]
 %   \centering
-%   \caption{Variables used for communication between Perl and \LaTeX}
+%   \caption{Variables used for communication between OCaml and \LaTeX}
 %   \label{tbl:variables}
 %   \begin{tabular}{@{}lll@{}}
 %     \hline
-%     Variable & Purpose & \perltex{} assignment \\
+%     Variable & Purpose & \ocamltex{} assignment \\
 %     \hline
 %
-%     |\plmac@tag| & |\plmac@tofile| field separator &
+%     |\mlmac@tag| & |\mlmac@tofile| field separator &
 %     (20 random letters) \\
 %
-%     |\plmac@tofile| & \LaTeX{} $\rightarrow$ Perl communication &
-%     |\jobname.topl| \\
+%     |\mlmac@tofile| & \LaTeX{} $\rightarrow$ OCaml communication &
+%     |\jobname.toml| \\
 %
-%     |\plmac@fromfile| & Perl $\rightarrow$ \LaTeX{} communication &
-%     |\jobname.frpl| \\
+%     |\mlmac@fromfile| & OCaml $\rightarrow$ \LaTeX{} communication &
+%     |\jobname.frml| \\
 %
-%     |\plmac@toflag| & |\plmac@tofile| synchronization &
-%     |\jobname.tfpl| \\
+%     |\mlmac@toflag| & |\mlmac@tofile| synchronization &
+%     |\jobname.tfml| \\
 %
-%     |\plmac@fromflag| & |\plmac@fromfile| synchronization &
-%     |\jobname.ffpl| \\
+%     |\mlmac@fromflag| & |\mlmac@fromfile| synchronization &
+%     |\jobname.ffml| \\
 %
-%     |\plmac@doneflag| & |\plmac@fromflag| synchronization &
-%     |\jobname.dfpl| \\
+%     |\mlmac@doneflag| & |\mlmac@fromflag| synchronization &
+%     |\jobname.dfml| \\
 %
 %     \hline
 %   \end{tabular}
 % \end{table}
 %
-% \begin{macro}{\ifplmac@have@perltex}
-% \begin{macro}{\plmac@have@perltextrue}
-% \begin{macro}{\plmac@have@perltexfalse}
+% \begin{macro}{\ifmlmac@have@ocamltex}
+% \begin{macro}{\mlmac@have@ocamltextrue}
+% \begin{macro}{\mlmac@have@ocamltexfalse}
 % The following block of code checks the existence of each of the
 % variables listed in Table~\ref{tbl:variables}.  If any variable is not
-% defined, \perlmac{} gives an error message and---as we shall see on
+% defined, \ocamlmac gives an error message and---as we shall see on
 % page~\pageref{page:define-dummies}---defines dummy versions of
-% |\perl|[|re|]|newcommand| and |\perl|[|re|]|newenvironment|.
+% |\ocaml|[|re|]|newcommand| and |\ocaml|[|re|]|newenvironment|.
 %    \begin{macrocode}
 \newif\ifplmac@have@perltex
 \plmac@have@perltextrue
-\@ifundefined{plmac@tag}{\plmac@have@perltexfalse}{}
-\@ifundefined{plmac@tofile}{\plmac@have@perltexfalse}{}
-\@ifundefined{plmac@fromfile}{\plmac@have@perltexfalse}{}
-\@ifundefined{plmac@toflag}{\plmac@have@perltexfalse}{}
-\@ifundefined{plmac@fromflag}{\plmac@have@perltexfalse}{}
-\@ifundefined{plmac@doneflag}{\plmac@have@perltexfalse}{}
-\ifplmac@have@perltex
+\@ifundefined{mlmac@tag}{\mlmac@have@ocamltexfalse}{}
+\@ifundefined{mlmac@tofile}{\mlmac@have@ocamltexfalse}{}
+\@ifundefined{mlmac@fromfile}{\mlmac@have@ocamltexfalse}{}
+\@ifundefined{mlmac@toflag}{\plmac@have@ocamltexfalse}{}
+\@ifundefined{mlmac@fromflag}{\plmac@have@ocamltexfalse}{}
+\@ifundefined{mlmac@doneflag}{\plmac@have@perltexfalse}{}
+\ifnlmac@have@ocamltex
 \else
-  \PackageError{perltex}{Document must be compiled using perltex}
+  \PackageError{ocamltex}{Document must be compiled using ocamltex}
     {Instead of compiling your document directly with latex, you need
-     to\MessageBreak use the perltex script.  \space perltex sets up
-     a variety of macros needed by\MessageBreak the perltex
+     to\MessageBreak use the ocamltex script.  \space ocamltex sets up
+     a variety of macros needed by\MessageBreak the ocamltex
      package as well as a listener process needed for\MessageBreak
-     communication between LaTeX and Perl.}
+     communication between LaTeX and OCaml.}
 \fi
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
 % \end{macro}
 %
-% \subsubsection{Defining Perl macros}
-% \label{sec:perl-mac}
+% \subsubsection{Defining Ocaml macros}
+% \label{sec:ocaml-mac}
 %
-% \PerlTeX{} defines four macros intended to be called by the user.
-% Section~\ref{sec:perl-mac} details the implementation of two of them:
-% |\perlnewcommand| and |\perlrenewcommand|.
-% (Section~\ref{sec:perl-env} details the implementation of the other
-% two, |\perlnewenvironment| and |\perlrenewenvironment|.)  The goal is
+% \OCamlTeX defines four macros intended to be called by the user.
+% Section~\ref{sec:ocaml-mac} details the implementation of two of them:
+% |\ocamlnewcommand| and |\ocamlrenewcommand|.
+% (Section~\ref{sec:ocaml-env} details the implementation of the other
+% two, |\ocamlnewenvironment| and |\ocamlrenewenvironment|.)  The goal is
 % for these two macros to behave \emph{exactly} like |\newcommand| and
 % |\renewcommand|, respectively, except that the author macros they in
-% turn define have Perl bodies instead of \LaTeX{} bodies.
+% turn define have OCaml bodies instead of \LaTeX{} bodies.
 %
 % The sequence of the operations defined in this section is as follows:
 %
 % \begin{enumerate}
-%   \item The user invokes |\perl|[|re|]|newcommand|, which stores
-%   |\|[|re|]|newcommand| in |\plmac@command|.  The
-%   |\perl|[|re|]|newcommand| macro then invokes |\plmac@newcommand@i|
-%   with a first argument of ``|*|'' for |\perl|[|re|]|newcommand*| or
-%   ``|!|'' for ordinary |\perl|[|re|]|newcommand|.
+%   \item The user invokes |\ocaml|[|re|]|newcommand|, which stores
+%   |\|[|re|]|newcommand| in |\mlmac@command|.  The
+%   |\ocaml|[|re|]|newcommand| macro then invokes |\mlmac@newcommand@i|
+%   with a first argument of ``|*|'' for |\ocaml|[|re|]|newcommand*| or
+%   ``|!|'' for ordinary |\ocaml|[|re|]|newcommand|.
 %
-%   \item |\plmac@newcommand@i| defines |\plmac@starchar| as ``|*|'' if
+%   \item |\mlmac@newcommand@i| defines |\mlmac@starchar| as ``|*|'' if
 %   it was passed a ``|*|'' or \meta{empty} if it was passed a ``|!|''.
-%   It then stores the name of the user's macro in |\plmac@macname|, a
-%   |\write|able version of the name in |\plmac@cleaned@macname|, and
-%   the macro's previous definition (needed by |\perlrenewcommand|) in
-%   |\plmac@oldbody|.  Finally, |\plmac@newcommand@i| invokes
-%   |\plmac@newcommand@ii|.
+%   It then stores the name of the user's macro in |\mlmac@macname|, a
+%   |\write|able version of the name in |\mlmac@cleaned@macname|, and
+%   the macro's previous definition (needed by |\ocamlrenewcommand|) in
+%   |\mlmac@oldbody|.  Finally, |\mlmac@newcommand@i| invokes
+%   |\mlmac@newcommand@ii|.
 %
-%   \item |\plmac@newcommand@ii| stores the number of arguments to the
-%   user's macro (which may be zero) in |\plmac@numargs|.  It then
-%   invokes |\plmac@newcommand@iii@opt| if the first argument is
-%   supposed to be optional or |\plmac@newcommand@iii@no@opt| if all
+%   \item |\mlmac@newcommand@ii| stores the number of arguments to the
+%   user's macro (which may be zero) in |\mlmac@numargs|.  It then
+%   invokes |\mlmac@newcommand@iii@opt| if the first argument is
+%   supposed to be optional or |\mlmac@newcommand@iii@no@opt| if all
 %   arguments are supposed to be required.
 %
-%   \item |\plmac@newcommand@iii@opt| defines |\plmac@defarg| as the
+%   \item |\mlmac@newcommand@iii@opt| defines |\mlmac@defarg| as the
 %   default value of the optional argument.
-%   |\plmac@newcommand@iii@no@opt| defines it as \meta{empty}.  Both
-%   functions then call |\plmac@haveargs|.
+%   |\mlmac@newcommand@iii@no@opt| defines it as \meta{empty}.  Both
+%   functions then call |\mlmac@haveargs|.
 %
-%   \item |\plmac@haveargs| stores the user's macro body (written in
-%   Perl) verbatim in |\plmac@perlcode|.  |\plmac@haveargs| then invokes
+%   \item |\mlmac@haveargs| stores the user's macro body (written in
+%   OCaml) verbatim in |\mlmac@ocamlcode|.  |\mlmac@haveargs| then invokes
 %   |\plmac@havecode|.
 %
-%   \item By the time |\plmac@havecode| is invoked all of the
+%   \item By the time |\mlmac@havecode| is invoked all of the
 %   information needed to define the user's macro is available.  Before
-%   defining a \LaTeX{} macro, however, |\plmac@havecode| invokes
-%   |\plmac@write@perl| to tell \perltex{} to define a Perl subroutine
+%   defining a \LaTeX{} macro, however, |\mlmac@havecode| invokes
+%   |\mlmac@write@ocaml| to tell \ocamltex to define a OCaml subroutine
 %   with a name based on |\plmac@cleaned@macname| and the code contained
-%   in |\plmac@perlcode|.  Figure~\ref{fig:tofile-define} illustrates
-%   the data that |\plmac@write@perl| passes to \perltex.
+%   in |\mlmac@ocamlcode|.  Figure~\ref{fig:tofile-define} illustrates
+%   the data that |\mlmac@write@perl| passes to \ocamltex.
 %
 % \begin{figure}[htbp]
 %   \centering
@@ -849,22 +849,22 @@
 %   \begin{tabular}{|l|}
 %     \hline
 %     \verb|DEF|                    \\ \hline
-%     \verb|\plmac@tag|             \\ \hline
-%     \verb|\plmac@cleaned@macname| \\ \hline
-%     \verb|\plmac@tag|             \\ \hline
-%     \verb|\plmac@perlcode|        \\ \hline
+%     \verb|\mlmac@tag|             \\ \hline
+%     \verb|\mlmac@cleaned@macname| \\ \hline
+%     \verb|\mlmac@tag|             \\ \hline
+%     \verb|\mlmac@ocamlcode|        \\ \hline
 %   \end{tabular}
 %   \MakeShortVerb\|
-%   \caption{Data written to \texttt{\string\plmac@tofile} to define a
+%   \caption{Data written to \texttt{\string\mlmac@tofile} to define a
 %     Perl subroutine}
 %   \label{fig:tofile-define}
 % \end{figure}
 %
-%   \item |\plmac@havecode| invokes |\newcommand| or |\renewcommand|, as
+%   \item |\mlmac@havecode| invokes |\newcommand| or |\renewcommand|, as
 %   appropriate, defining the user's macro as a call to
-%   |\plmac@write@perl|.  An invocation of the user's \LaTeX{} macro
-%   causes |\plmac@write@perl| to pass the information shown in
-%   Figure~\ref{fig:tofile-use} to \perltex.
+%   |\mlmac@write@ocaml|.  An invocation of the user's \LaTeX{} macro
+%   causes |\mlmac@write@ocaml| to pass the information shown in
+%   Figure~\ref{fig:tofile-use} to \ocamltex.
 %
 % \begin{figure}[htbp]
 %   \centering
@@ -872,89 +872,89 @@
 %   \begin{tabular}{|l|}
 %     \hline
 %     \verb|USE|                    \\ \hline
-%     \verb|\plmac@tag|             \\ \hline
-%     \verb|\plmac@cleaned@macname| \\ \hline
-%     \verb|\plmac@tag|             \\ \hline
+%     \verb|\mlmac@tag|             \\ \hline
+%     \verb|\mlmac@cleaned@macname| \\ \hline
+%     \verb|\mlmac@tag|             \\ \hline
 %     \verb|#1|                     \\ \hline
-%     \verb|\plmac@tag|             \\ \hline
+%     \verb|\mlmac@tag|             \\ \hline
 %     \verb|#2|                     \\ \hline
-%     \verb|\plmac@tag|             \\ \hline
+%     \verb|\mlmac@tag|             \\ \hline
 %     \verb|#3|                     \\ \hline
 %     \multicolumn{1}{c}{$\vdots$}  \\ \hline
 %     \verb|#|\meta{last}           \\ \hline
 %   \end{tabular}
 %   \MakeShortVerb\|
-%   \caption{Data written to \texttt{\string\plmac@tofile} to invoke a
-%     Perl subroutine}
+%   \caption{Data written to \texttt{\string\mlmac@tofile} to invoke a
+%     OCaml function}
 %   \label{fig:tofile-use}
 % \end{figure}
 %
-%   \item Whenever |\plmac@write@perl| is invoked it writes its argument
-%   verbatim to |\plmac@tofile|; \perltex{} evaluates the code and
-%   writes |\plmac@fromfile|; finally, |\plmac@write@perl| |\input|s
-%   |\plmac@fromfile|.
+%   \item Whenever |\mlmac@write@ocaml| is invoked it writes its argument
+%   verbatim to |\mlmac@tofile|; \ocamltex evaluates the code and
+%   writes |\mlmac@fromfile|; finally, |\mlmac@write@ocaml| |\input|s
+%   |\mlmac@fromfile|.
 % \end{enumerate}
 %
 % An example might help distinguish the myriad macros used internally by
-% \perlmac.  Consider the following call made by the user's
+% \ocamlmac.  Consider the following call made by the user's
 % document:\label{text:example-cmd}
 %
 % \begin{center}
-% |\perlnewcommand*{\example}[3][frobozz]{join("---", @_)}|
+% |\ocamlnewcommand*{\example}[3][frobozz]{join("---", @_)}|
 % \end{center}
 %
 % \noindent
-% Table~\ref{tbl:example-cmd} shows how \perlmac{} parses that command
+% Table~\ref{tbl:example-cmd} shows how \ocamlmac parses that command
 % into its constituent components and which components are bound to
-% which \perlmac{} macros.
+% which \ocamlmac macros.
 %
 % \begin{table}[htbp]
 %   \centering
 %   \caption{Macro assignments corresponding to an sample
-%     \texttt{\string\perlnewcommand*}}
+%     \texttt{\string\ocamlnewcommand*}}
 %   \label{tbl:example-cmd}
 %   \begin{tabular}{@{}lll@{}}
 %     \hline
 %     Macro & \multicolumn{2}{l@{}}{Sample definition} \\
 %     \hline
-%     |\plmac@command|          & |\newcommand|                    \\
-%     |\plmac@starchar|         & |*|                              \\
-%     |\plmac@macname|          & |\example|                       \\
-%     |\plmac@cleaned@macname|  & |\example| & (catcode~11)        \\
-%     |\plmac@oldbody|          & |\relax| & (presumably)          \\
-%     |\plmac@numargs|          & |3|                              \\
-%     |\plmac@defarg|           & |frobozz|                        \\
-%     |\plmac@perlcode|         & |join("---", @_)| & (catcode~11) \\
+%     |\mlmac@command|          & |\newcommand|                    \\
+%     |\mlmac@starchar|         & |*|                              \\
+%     |\mlmac@macname|          & |\example|                       \\
+%     |\mlmac@cleaned@macname|  & |\example| & (catcode~11)        \\
+%     |\mlmac@oldbody|          & |\relax| & (presumably)          \\
+%     |\mlmac@numargs|          & |3|                              \\
+%     |\mlmac@defarg|           & |frobozz|                        \\
+%     |\mlmac@perlcode|         & |join("---", @_)| & (catcode~11) \\
 %     \hline
 %   \end{tabular}
 % \end{table}
 %
 % \bigskip
 %
-% \begin{macro}{\perlnewcommand}
-% \begin{macro}{\perlrenewcommand}
-% \begin{macro}{\plmac@command}
-% \begin{macro}{\plmac@next}
-% |\perlnewcommand| and |\perlrenewcommand| are the first two commands
-% exported to the user by \perlmac.  |\perlnewcommand| is analogous to
-% |\newcommand| except that the macro body consists of Perl code instead
-% of \LaTeX{} code.  Likewise, |\perlrenewcommand| is analogous to
-% |\renewcommand| except that the macro body consists of Perl code
-% instead of \LaTeX{} code.  |\perlnewcommand| and |\perlrenewcommand|
-% merely define |\plmac@command| and |\plmac@next| and invoke
-% |\plmac@newcommand@i|.
+% \begin{macro}{\ocamlnewcommand}
+% \begin{macro}{\ocamlrenewcommand}
+% \begin{macro}{\mlmac@command}
+% \begin{macro}{\mlmac@next}
+% |\ocamlnewcommand| and |\ocamlrenewcommand| are the first two commands
+% exported to the user by \ocamlmac.  |\ocamlnewcommand| is analogous to
+% |\newcommand| except that the macro body consists of OCaml code instead
+% of \LaTeX{} code.  Likewise, |\ocamlrenewcommand| is analogous to
+% |\renewcommand| except that the macro body consists of OCaml code
+% instead of \LaTeX{} code.  |\ocamlnewcommand| and |\ocamlrenewcommand|
+% merely define |\mlmac@command| and |\mlmac@next| and invoke
+% |\mlmac@newcommand@i|.
 %    \begin{macrocode}
-\def\perlnewcommand{%
-  \let\plmac@command=\newcommand
-  \let\plmac@next=\relax
-  \@ifnextchar*{\plmac@newcommand@i}{\plmac@newcommand@i!}%
+\def\ocalnewcommand{%
+  \let\mlmac@command=\newcommand
+  \let\mlmac@next=\relax
+  \@ifnextchar*{\mlmac@newcommand@i}{\mlmac@newcommand@i!}%
 }
 %    \end{macrocode}
 %    \begin{macrocode}
-\def\perlrenewcommand{%
-  \let\plmac@next=\relax
-  \let\plmac@command=\renewcommand
-  \@ifnextchar*{\plmac@newcommand@i}{\plmac@newcommand@i!}%
+\def\ocamlrenewcommand{%
+  \let\mlmac@next=\relax
+  \let\mlmac@command=\renewcommand
+  \@ifnextchar*{\mlmac@newcommand@i}{\mlmac@newcommand@i!}%
 }
 %    \end{macrocode}
 % \end{macro}
@@ -962,35 +962,35 @@
 % \end{macro}
 % \end{macro}
 %
-% \begin{macro}{\plmac@newcommand@i}
-% \begin{macro}{\plmac@starchar}
-% \begin{macro}{\plmac@macname}
-% \begin{macro}{\plmac@oldbody}
-% \begin{macro}{\plmac@cleaned@macname}
+% \begin{macro}{\mlmac@newcommand@i}
+% \begin{macro}{\mlmac@starchar}
+% \begin{macro}{\mlmac@macname}
+% \begin{macro}{\mlmac@oldbody}
+% \begin{macro}{\mlmac@cleaned@macname}
 % If\label{page:newcommand-i} the user invoked
-% |\perl|[|re|]|newcommand*| then |\plmac@newcommand@i| is passed a
-% ``|*|'' and, in turn, defines |\plmac@starchar| as ``|*|''.  If the
-% user invoked |\perl|[|re|]|newcommand| (no ``|*|'') then
-% |\plmac@newcommand@i| is passed a ``|!|'' and, in turn, defines
-% |\plmac@starchar| as \meta{empty}.  In either case,
-% |\plmac@newcommand@i| defines |\plmac@macname| as the name of the
-% user's macro, |\plmac@cleaned@macname| as a |\write|able
-% (i.e.,~category code~11) version of |\plmac@macname|, and
-% |\plmac@oldbody| and the previous definition of the user's macro.
-% (|\plmac@oldbody| is needed by |\perlrenewcommand|.)  It then invokes
-% |\plmac@newcommand@ii|.
+% |\perl|[|re|]|newcommand*| then |\mlmac@newcommand@i| is passed a
+% ``|*|'' and, in turn, defines |\mlmac@starchar| as ``|*|''.  If the
+% user invoked |\ocaml|[|re|]|newcommand| (no ``|*|'') then
+% |\mlmac@newcommand@i| is passed a ``|!|'' and, in turn, defines
+% |\mlmac@starchar| as \meta{empty}.  In either case,
+% |\mlmac@newcommand@i| defines |\plmac@macname| as the name of the
+% user's macro, |\mlmac@cleaned@macname| as a |\write|able
+% (i.e.,~category code~11) version of |\mlmac@macname|, and
+% |\mlmac@oldbody| and the previous definition of the user's macro.
+% (|\mlmac@oldbody| is needed by |\ocamlrenewcommand|.)  It then invokes
+% |\mlmac@newcommand@ii|.
 %    \begin{macrocode}
-\def\plmac@newcommand@i#1#2{%
+\def\mlmac@newcommand@i#1#2{%
   \ifx#1*%
-    \def\plmac@starchar{*}%
+    \def\mlmac@starchar{*}%
   \else
-    \def\plmac@starchar{}%
+    \def\mlmac@starchar{}%
   \fi
-  \def\plmac@macname{#2}%
-  \let\plmac@oldbody=#2\relax
-  \expandafter\def\expandafter\plmac@cleaned@macname\expandafter{%
-    \expandafter\string\plmac@macname}%
-  \@ifnextchar[{\plmac@newcommand@ii}{\plmac@newcommand@ii[0]}%]
+  \def\mlmac@macname{#2}%
+  \let\mlmac@oldbody=#2\relax
+  \expandafter\def\expandafter\mlmac@cleaned@macname\expandafter{%
+    \expandafter\string\mlmac@macname}%
+  \@ifnextchar[{\mlmac@newcommand@ii}{\mlmac@newcommand@ii[0]}%]
 }
 %    \end{macrocode}
 % \end{macro}
@@ -999,61 +999,61 @@
 % \end{macro}
 % \end{macro}
 %
-% \begin{macro}{\plmac@newcommand@ii}
-% \begin{macro}{\plmac@numargs}
-% |\plmac@newcommand@i| invokes |\plmac@newcommand@ii| with the number
-% of arguments to the user's macro in brackets.  |\plmac@newcommand@ii|
-% stores that number in |\plmac@numargs| and invokes
-% |\plmac@newcommand@iii@opt| if the first argument is to be optional or
-% |\plmac@newcommand@iii@no@opt| if all arguments are to be mandatory.
+% \begin{macro}{\mlmac@newcommand@ii}
+% \begin{macro}{\mlmac@numargs}
+% |\mlmac@newcommand@i| invokes |\mlmac@newcommand@ii| with the number
+% of arguments to the user's macro in brackets.  |\mlmac@newcommand@ii|
+% stores that number in |\mlmac@numargs| and invokes
+% |\mlmac@newcommand@iii@opt| if the first argument is to be optional or
+% |\mlmac@newcommand@iii@no@opt| if all arguments are to be mandatory.
 %    \begin{macrocode}
-\def\plmac@newcommand@ii[#1]{%
-  \def\plmac@numargs{#1}%
-  \@ifnextchar[{\plmac@newcommand@iii@opt}
-               {\plmac@newcommand@iii@no@opt}%]
+\def\mlmac@newcommand@ii[#1]{%
+  \def\mlmac@numargs{#1}%
+  \@ifnextchar[{\mlmac@newcommand@iii@opt}
+               {\mlmac@newcommand@iii@no@opt}%]
 }
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
 %
-% \begin{macro}{\plmac@newcommand@iii@opt}
-% \begin{macro}{\plmac@newcommand@iii@no@opt}
-% \begin{macro}{\plmac@defarg}
+% \begin{macro}{\mlmac@newcommand@iii@opt}
+% \begin{macro}{\mlmac@newcommand@iii@no@opt}
+% \begin{macro}{\mlmac@defarg}
 % Only one of these two macros is executed per invocation of
-% |\perl|[|re|]|newcommand|, depending on whether or not the first
+% |\ocaml|[|re|]|newcommand|, depending on whether or not the first
 % argument of the user's macro is an optional argument.
-% |\plmac@newcommand@iii@opt| is invoked if the argument is optional.
-% It defines |\plmac@defarg| to the default value of the optional
-% argument.  |\plmac@newcommand@iii@no@opt| is invoked if all arguments
-% are mandatory.  It defines |\plmac@defarg| as |\relax|.  Both
-% |\plmac@newcommand@iii@opt| and |\plmac@newcommand@iii@no@opt| then
-% invoke |\plmac@haveargs|.
+% |\mlmac@newcommand@iii@opt| is invoked if the argument is optional.
+% It defines |\mlmac@defarg| to the default value of the optional
+% argument.  |\mlmac@newcommand@iii@no@opt| is invoked if all arguments
+% are mandatory.  It defines |\mlmac@defarg| as |\relax|.  Both
+% |\mlmac@newcommand@iii@opt| and |\mlmac@newcommand@iii@no@opt| then
+% invoke |\mlmac@haveargs|.
 %    \begin{macrocode}
-\def\plmac@newcommand@iii@opt[#1]{%
-  \def\plmac@defarg{#1}%
-  \plmac@haveargs
+\def\mlmac@newcommand@iii@opt[#1]{%
+  \def\mlmac@defarg{#1}%
+  \mlmac@haveargs
 }
 %    \end{macrocode}
 %    \begin{macrocode}
-\def\plmac@newcommand@iii@no@opt{%
-  \let\plmac@defarg=\relax
-  \plmac@haveargs
+\def\mlmac@newcommand@iii@no@opt{%
+  \let\mlmac@defarg=\relax
+  \mlmac@haveargs
 }
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
 % \end{macro}
 %
-% \begin{macro}{\plmac@perlcode}
-% \begin{macro}{\plmac@haveargs}
+% \begin{macro}{\mlmac@ocamlcode}
+% \begin{macro}{\mlmac@haveargs}
 % Now things start to get tricky.  We have all of the arguments we need
 % to define the user's command so all that's left is to grab the macro
-% body.  But there's a catch: Valid Perl code is unlikely to be valid
+% body.  But there's a catch: Valid OCaml code is unlikely to be valid
 % \LaTeX{} code.  We therefore have to read the macro body in a
 % |\verb|-like mode.  Furthermore, we actually need to \emph{store} the
 % macro body in a variable, as we don't need it right away.
 %
-% The approach we take in |\plmac@haveargs| is as follows.  First, we
+% The approach we take in |\mlmac@haveargs| is as follows.  First, we
 % give all ``special'' characters category code~12 (``other'').  We then
 % indicate that the carriage return character (control-M) marks the end
 % of a line and that curly braces retain their normal meaning.  With the
@@ -1062,15 +1062,15 @@
 % reset all category codes to their previous value, and continue
 % processing the user's macro definition.  How do we do that?  The
 % answer is to assign the upcoming text fragment to a token register
-% (|\plmac@perlcode|) while an |\afterassignment| is in effect.  The
-% |\afterassignment| causes control to transfer to |\plmac@havecode|
-% right after |\plmac@perlcode| receives the macro body with all of the
+% (|\mlmac@perlcode|) while an |\afterassignment| is in effect.  The
+% |\afterassignment| causes control to transfer to |\mlmac@havecode|
+% right after |\mlmac@perlcode| receives the macro body with all of the
 % ``special'' characters made impotent.
 %    \begin{macrocode}
-\newtoks\plmac@perlcode
+\newtoks\mlmac@perlcode
 %    \end{macrocode}
 %    \begin{macrocode}
-\def\plmac@haveargs{%
+\def\mlmac@haveargs{%
   \begingroup
     \let\do\@makeother\dospecials
     \catcode`\^^M=\active
@@ -1078,139 +1078,137 @@
     \endlinechar=`\^^M
     \catcode`\{=1
     \catcode`\}=2
-    \afterassignment\plmac@havecode
-    \global\plmac@perlcode
+    \afterassignment\mlmac@havecode
+    \global\mlmac@ocamlcode
 }
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
 %
-% Control is transfered to |\plmac@havecode| from |\plmac@haveargs|
-% right after the user's macro body is assigned to |\plmac@perlcode|.
+% Control is transfered to |\mlmac@havecode| from |\mlmac@haveargs|
+% right after the user's macro body is assigned to |\mlmac@ocamlcode|.
 % We now have everything we need to define the user's macro.  The goal
-% is to define it as ``|\plmac@write@perl{|\meta{contents of
+% is to define it as ``|\mlmac@write@ocaml{|\meta{contents of
 % Figure~\ref{fig:tofile-use}}|}|''.  This is easier said than done
 % because the number of arguments in the user's macro is not known
 % statically, yet we need to iterate over however many arguments there
-% are.  Because of this complexity, we will explain |\plmac@perlcode|
+% are.  Because of this complexity, we will explain |\mlmac@perlcode|
 % piece-by-piece.
 %
-% \begin{macro}{\plmac@sep}
+% \begin{macro}{\mlmac@sep}
 % Define a character to separate each of the items presented in
-% Figures~\ref{fig:tofile-define} and~\ref{fig:tofile-use}.  Perl will
+% Figures~\ref{fig:tofile-define} and~\ref{fig:tofile-use}.  OCaml will
 % need to strip this off each argument.  For convenience in porting to
 % languages with less powerful string manipulation than Perl's, we
-% define |\plmac@sep| as a carriage-return character of category code~11
+% define |\mlmac@sep| as a carriage-return character of category code~11
 % (``letter'').
 %    \begin{macrocode}
-{\catcode`\^^M=11\gdef\plmac@sep{^^M}}
+{\catcode`\^^M=11\gdef\mlmac@sep{^^M}}
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{\plmac@argnum}
+% \begin{macro}{\mlmac@argnum}
 % Define a loop variable that will iterate from |1| to the number of
-% arguments in the user's function, i.e.,~|\plmac@numargs|.
+% arguments in the user's function, i.e.,~|\mlmac@numargs|.
 %    \begin{macrocode}
 \newcount\plmac@argnum
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{\plmac@havecode}
+% \begin{macro}{\mlmac@havecode}
 % Now comes the final piece of what started as a call to
-% |\perl|[|re|]|newcommand|.  First, to reset all category codes back to
-% normal, |\plmac@havecode| ends the group that was begun in
-% |\plmac@haveargs|.
-% \changes{v1.1}{2004/02/24}{Added a \texttt{\string\string\string\plmac@next}
-%   hook to support \PerlTeX's new environment-defining macros}
+% |\ocaml|[|re|]|newcommand|.  First, to reset all category codes back to
+% normal, |\mlmac@havecode| ends the group that was begun in
+% |\mlmac@haveargs|.
 %    \begin{macrocode}
-\def\plmac@havecode{%
+\def\mlmac@havecode{%
   \endgroup
 %    \end{macrocode}
 %
-% \begin{macro}{\plmac@define@sub}
-% We invoke |\plmac@write@perl| to define a Perl subroutine named after
-% |\plmac@cleaned@macname|.  |\plmac@define@sub| sends Perl the
+% \begin{macro}{\mlmac@define@sub}
+% We invoke |\mlmac@write@ocaml| to define a OCaml subroutine named after
+% |\mlmac@cleaned@macname|.  |\mlmac@define@sub| sends OCaml the
 % information shown in Figure~\vref{fig:tofile-define}.
 %    \begin{macrocode}
-  \edef\plmac@define@sub{%
-    \noexpand\plmac@write@perl{DEF\plmac@sep
-      \plmac@tag\plmac@sep
-      \plmac@cleaned@macname\plmac@sep
-      \plmac@tag\plmac@sep
-      \the\plmac@perlcode
+  \edef\mlmac@define@sub{%
+    \noexpand\mlmac@write@ocaml{DEF\mlmac@sep
+      \mlmac@tag\mlmac@sep
+      \mlmac@cleaned@macname\mlmac@sep
+      \mlmac@tag\mlmac@sep
+      \the\mlmac@ocamlcode
     }%
   }%
-  \plmac@define@sub
+  \mlmac@define@sub
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{\plmac@body}
-% The rest of |\plmac@havecode| is preparation for defining the user's
+% \begin{macro}{\mlmac@body}
+% The rest of |\mlmac@havecode| is preparation for defining the user's
 % macro.  (\LaTeXe's |\newcommand| or |\renewcommand| will do the actual
-% work, though.)  |\plmac@body| will eventually contain the complete
+% work, though.)  |\mlmac@body| will eventually contain the complete
 % (\LaTeX) body of the user's macro.  Here, we initialize it to the
 % first three items listed in Figure~\vref{fig:tofile-use} (with
-% intervening |\plmac@sep|s).
+% intervening |\mlmac@sep|s).
 %    \begin{macrocode}
-  \edef\plmac@body{%
-    USE\plmac@sep
-    \plmac@tag\plmac@sep
-    \plmac@cleaned@macname
+  \edef\mlmac@body{%
+    USE\mlmac@sep
+    \mlmac@tag\mlmac@sep
+    \mlmac@cleaned@macname
   }%
 %    \end{macrocode}
 %
-% \begin{macro}{\plmac@hash}
-% Now, for each argument |#1|, |#2|,~\dots, |#\plmac@numargs| we append
-% a |\plmac@tag| plus the argument to |\plmac@body| (as always, with a
-% |\plmac@sep| after each item).  This requires more trickery, as \TeX{}
+% \begin{macro}{\mlmac@hash}
+% Now, for each argument |#1|, |#2|,~\dots, |#\mlmac@numargs| we append
+% a |\mlmac@tag| plus the argument to |\mlmac@body| (as always, with a
+% |\mlmac@sep| after each item).  This requires more trickery, as \TeX{}
 % requires a macro-parameter character (``|#|'') to be followed by a
 % literal number, not a variable.  The approach we take, which I first
 % discovered in the Texinfo source code (although it's used by \LaTeX{}
 % and probably other \TeX-based systems as well), is to |\let|-bind
-% |\plmac@hash| to |\relax|.  This makes |\plmac@hash| unexpandable, and
+% |\mlmac@hash| to |\relax|.  This makes |\mlmac@hash| unexpandable, and
 % because it's not a ``|#|'', \TeX{} doesn't complain.  After
-% |\plmac@body| has been extended to include |\plmac@hash1|,
-% |\plmac@hash2|,~\dots, |\plmac@hash\plmac@numargs|, we then
-% |\let|-bind |\plmac@hash| to |##|, which \TeX{} lets us do because
-% we're within a macro definition (|\plmac@havecode|).  |\plmac@body|
-% will then contain |#1|, |#2|,~\dots, |#\plmac@numargs|, as desired.
+% |\mlmac@body| has been extended to include |\mlmac@hash1|,
+% |\mlmac@hash2|,~\dots, |\mlmac@hash\plmac@numargs|, we then
+% |\let|-bind |\mlmac@hash| to |##|, which \TeX{} lets us do because
+% we're within a macro definition (|\mlmac@havecode|).  |\mlmac@body|
+% will then contain |#1|, |#2|,~\dots, |#\mlmac@numargs|, as desired.
 %    \begin{macrocode}
-  \let\plmac@hash=\relax
-  \plmac@argnum=1%
+  \let\mlmac@hash=\relax
+  \mlmac@argnum=1%
   \loop
-    \ifnum\plmac@numargs<\plmac@argnum
+    \ifnum\mlmac@numargs<\mlmac@argnum
     \else
-      \edef\plmac@body{%
-        \plmac@body\plmac@sep\plmac@tag\plmac@sep
-        \plmac@hash\plmac@hash\number\plmac@argnum}%
-      \advance\plmac@argnum by 1%
+      \edef\mlmac@body{%
+        \mlmac@body\mlmac@sep\mlmac@tag\mlmac@sep
+        \mlmac@hash\mlmac@hash\number\mlmac@argnum}%
+      \advance\mlmac@argnum by 1%
   \repeat
-  \let\plmac@hash=##\relax
+  \let\mlmac@hash=##\relax
 %    \end{macrocode}
 %
-% \begin{macro}{\plmac@define@command}
+% \begin{macro}{\mlmac@define@command}
 % We're ready to execute a |\|[|re|]|newcommand|.  Because we need to
-% expand many of our variables, we |\edef| |\plmac@define@command| to
+% expand many of our variables, we |\edef| |\mlmac@define@command| to
 % the appropriate |\|[|re|]|newcommand| call, which we will soon
 % execute.  The user's macro must first be |\let|-bound to |\relax| to
 % prevent it from expanding.  Then, we handle two cases: either all
-% arguments are mandatory (and |\plmac@defarg| is |\relax|) or the
+% arguments are mandatory (and |\mlmac@defarg| is |\relax|) or the
 % user's macro has an optional argument (with default value
-% |\plmac@defarg|).
+% |\mlmac@defarg|).
 %    \begin{macrocode}
-  \expandafter\let\plmac@macname=\relax
-  \ifx\plmac@defarg\relax
-    \edef\plmac@define@command{%
-      \noexpand\plmac@command\plmac@starchar{\plmac@macname}%
-      [\plmac@numargs]{%
-        \noexpand\plmac@write@perl{\plmac@body}%
+  \expandafter\let\mlmac@macname=\relax
+  \ifx\mlmac@defarg\relax
+    \edef\mlmac@define@command{%
+      \noexpand\mlmac@command\mlmac@starchar{\mlmac@macname}%
+      [\mlmac@numargs]{%
+        \noexpand\mlmac@write@ocaml{\mlmac@body}%
       }%
   }%
   \else
-    \edef\plmac@define@command{%
-      \noexpand\plmac@command\plmac@starchar{\plmac@macname}%
-      [\plmac@numargs][\plmac@defarg]{%
-        \noexpand\plmac@write@perl{\plmac@body}%
+    \edef\mlmac@define@command{%
+      \noexpand\mlmac@command\mlmac@starchar{\mlmac@macname}%
+      [\mlmac@numargs][\mlmac@defarg]{%
+        \noexpand\mlmac@write@ocaml{\mlmac@body}%
       }%
   }%
   \fi
@@ -1218,20 +1216,20 @@
 %
 % The final steps are to restore the previous definition of the user's
 % macro---we had set it to |\relax| above to make the name
-% unexpandable---then redefine it by invoking |\plmac@define@command|.
+% unexpandable---then redefine it by invoking |\mlmac@define@command|.
 % Why do we need to restore the previous definition if we're just going
 % to redefine it?  Because |\newcommand| needs to produce an error if
 % the macro was previously defined and |\renewcommand| needs to produce
 % an error if the macro was \emph{not} previously defined.
 %
-% |\plmac@havecode| concludes by invoking |\plmac@next|, which is a
-% no-op for |\perlnewcommand| and |\perlrenewcommand| but processes the
-% end-environment code for |\perlnewenvironment| and
-% |\perlrenewenvironment|.
+% |\mlmac@havecode| concludes by invoking |\mlmac@next|, which is a
+% no-op for |\ocamlnewcommand| and |\ocamlrenewcommand| but processes the
+% end-environment code for |\ocamlnewenvironment| and
+% |\ocamlrenewenvironment|.
 %    \begin{macrocode}
-  \expandafter\let\plmac@macname=\plmac@oldbody
-  \plmac@define@command
-  \plmac@next
+  \expandafter\let\mlmac@macname=\mlmac@oldbody
+  \mlmac@define@command
+  \mlmac@next
 }
 %    \end{macrocode}
 % \end{macro}
@@ -1240,56 +1238,52 @@
 % \end{macro}
 %
 %
-% \subsubsection{Defining Perl environments}
-% \label{sec:perl-env}
+% \subsubsection{Defining OCaml environments}
+% \label{sec:ocaml-env}
 %
-% \changes{v1.1}{2004/02/24}{Added new
-%   \texttt{\string\string\string\perlnewenvironment} and
-%   \texttt{\string\string\string\perlrenewenvironment} macros}
-%
-% Section~\ref{sec:perl-mac} detailed the implementation of
-% |\perlnewcommand| and |\perlrenewcommand|.  Section~\ref{sec:perl-env}
-% does likewise for \PerlTeX's remaining two macros,
-% |\perlnewenvironment| and |\perlrenewenvironment|, which are the
-% Perl-bodied analogues of |\newenvironment| and |\renewenvironment|.
+% Section~\ref{sec:ocaml-mac} detailed the implementation of
+% |\ocamlnewcommand| and |\ocamlrenewcommand|.  Section~\ref{sec:ocaml-env}
+% does likewise for \OCamlTeX's remaining two macros,
+% |\ocamlnewenvironment| and |\ocamlrenewenvironment|, which are the
+% OCaml-bodied analogues of |\newenvironment| and |\renewenvironment|.
 % This section is significantly shorter than the previous because
-% |\perlnewenvironment| and |\perlrenewenvironment| are largely built
-% atop the macros already defined in Section~\ref{sec:perl-mac}.
+% |\ocamlnewenvironment| and |\ocamlrenewenvironment| are largely built
+% atop the macros already defined in Section~\ref{sec:ocaml-mac}.
 %
-% \begin{macro}{\perlnewenvironment}
-% \begin{macro}{\perlrenewenvironment}
-% \begin{macro}{\plmac@command}
-% \begin{macro}{\plmac@next}
-% |\perlnewenvironment| and |\perlrenewenvironment| are the remaining
-% two commands exported to the user by \perlmac.  |\perlnewenvironment|
+% \begin{macro}{\ocamlnewenvironment}
+% \begin{macro}{\ocamlrenewenvironment}
+% \begin{macro}{\mlmac@command}
+% \begin{macro}{\mlmac@next}
+% |\ocamlnewenvironment| and |\ocamlrenewenvironment| are the remaining
+% two commands exported to the user by \ocamlmac.  |\ocamlnewenvironment|
 % is analogous to |\newenvironment| except that the macro body consists
-% of Perl code instead of \LaTeX{} code.  Likewise,
-% |\perlrenewenvironment| is analogous to |\renewenvironment| except
-% that the macro body consists of Perl code instead of \LaTeX{} code.
-% |\perlnewenvironment| and |\perlrenewenvironment| merely define
-% |\plmac@command| and |\plmac@next| and invoke
-% |\plmac@newenvironment@i|.
+% of OCaml code instead of \LaTeX{} code.  Likewise,
+% |\ocamlrenewenvironment| is analogous to |\renewenvironment| except
+% that the macro body consists of OCaml code instead of \LaTeX{} code.
+% |\ocamlnewenvironment| and |\ocamlrenewenvironment| merely define
+% |\mlmac@command| and |\mlmac@next| and invoke
+% |\mlmac@newenvironment@i|.
 %
-% The significance of |\plmac@next| (which was let-bound to |\relax| for
-% |\perl|[|re|]|newcommand| but is let-bound to |\plmac@end@environment|
+% The significance of |\mlmac@next| (which was let-bound to |\relax| for
+% |\ocaml|[|re|]|newcommand| but is let-bound to |\mlmac@end@environment|
 % here) is that a \LaTeX{} environment definition is really two macro
 % definitions: |\|\meta{name} and |\end|\meta{name}.  Because we want to
 % reuse as much code as possible the idea is to define the ``begin''
-% code as one macro, then inject---by way of |plmac@next|---a call to
-% |\plmac@end@environment|, which defines the ``end'' code as a second
+% code as one macro, then inject---by way of |mlmac@next|---a call to
+% |\mlmac@end@environment|, which defines the ``end'' code as a second
 % macro.
 %    \begin{macrocode}
-\def\perlnewenvironment{%
-  \let\plmac@command=\newcommand
-  \let\plmac@next=\plmac@end@environment
-  \@ifnextchar*{\plmac@newenvironment@i}{\plmac@newenvironment@i!}%
+\def\ocamlnewenvironment{%
+  \let\mlmac@command=\newcommand
+  \let\mlmac@next=\mlmac@end@environment
+  \@ifnextchar*{\mlmac@newenvironment@i}{\mlmac@newenvironment@i!}%
 }
 %    \end{macrocode}
 %    \begin{macrocode}
-\def\perlrenewenvironment{%
-  \let\plmac@command=\renewcommand
-  \let\plmac@next=\plmac@end@environment
-  \@ifnextchar*{\plmac@newenvironment@i}{\plmac@newenvironment@i!}%
+\def\ocamlrenewenvironment{%
+  \let\mlmac@command=\renewcommand
+  \let\mlmac@next=\mlmac@end@environment
+  \@ifnextchar*{\mlmac@newenvironment@i}{\mlmac@newenvironment@i!}%
 }
 %    \end{macrocode}
 % \end{macro}
@@ -1297,34 +1291,34 @@
 % \end{macro}
 % \end{macro}
 %
-% \begin{macro}{\plmac@newenvironment@i}
-% \begin{macro}{\plmac@starchar}
-% \begin{macro}{\plmac@envname}
-% \begin{macro}{\plmac@macname}
-% \begin{macro}{\plmac@oldbody}
-% \begin{macro}{\plmac@cleaned@macname}
-% The |\plmac@newenvironment@i| macro is analogous to
-% |\plmac@newcommand@i|; see the description of
-% |\plmac@newcommand@i|~\vpageref{page:newcommand-i} to understand the
+% \begin{macro}{\mlmac@newenvironment@i}
+% \begin{macro}{\mlmac@starchar}
+% \begin{macro}{\mlmac@envname}
+% \begin{macro}{\mlmac@macname}
+% \begin{macro}{\mlmac@oldbody}
+% \begin{macro}{\mlmac@cleaned@macname}
+% The |\mlmac@newenvironment@i| macro is analogous to
+% |\mlmac@newcommand@i|; see the description of
+% |\mlmac@newcommand@i|~\vpageref{page:newcommand-i} to understand the
 % basic structure.  The primary difference is that the environment name
 % (|#2|) is just text, not a control sequence.  We store this text in
-% |\plmac@envname| to facilitate generating the names of the two macros
+% |\mlmac@envname| to facilitate generating the names of the two macros
 % that constitute an environment definition.  Note that there is no
-% |\plmac@newenvironment@ii|; control passes instead to
-% |\plmac@newcommand@ii|.
+% |\mlmac@newenvironment@ii|; control passes instead to
+% |\mlmac@newcommand@ii|.
 %    \begin{macrocode}
-\def\plmac@newenvironment@i#1#2{%
+\def\mlmac@newenvironment@i#1#2{%
   \ifx#1*%
-    \def\plmac@starchar{*}%
+    \def\mlmac@starchar{*}%
   \else
-    \def\plmac@starchar{}%
+    \def\mlmac@starchar{}%
   \fi
-  \def\plmac@envname{#2}%
-  \expandafter\def\expandafter\plmac@macname\expandafter{\csname#2\endcsname}%
-  \expandafter\let\expandafter\plmac@oldbody\plmac@macname\relax
-  \expandafter\def\expandafter\plmac@cleaned@macname\expandafter{%
-    \expandafter\string\plmac@macname}%
-  \@ifnextchar[{\plmac@newcommand@ii}{\plmac@newcommand@ii[0]}%]
+  \def\mlmac@envname{#2}%
+  \expandafter\def\expandafter\mlmac@macname\expandafter{\csname#2\endcsname}%
+  \expandafter\let\expandafter\mlmac@oldbody\mlmac@macname\relax
+  \expandafter\def\expandafter\mlmac@cleaned@macname\expandafter{%
+    \expandafter\string\mlmac@macname}%
+  \@ifnextchar[{\mlmac@newcommand@ii}{\mlmac@newcommand@ii[0]}%]
 }
 %    \end{macrocode}
 % \end{macro}
@@ -1334,38 +1328,38 @@
 % \end{macro}
 % \end{macro}
 %
-% \begin{macro}{\plmac@end@environment}
-% \begin{macro}{\plmac@next}
-% \begin{macro}{\plmac@macname}
-% \begin{macro}{\plmac@oldbody}
-% \begin{macro}{\plmac@cleaned@macname}
+% \begin{macro}{\mlmac@end@environment}
+% \begin{macro}{\mlmac@next}
+% \begin{macro}{\mlmac@macname}
+% \begin{macro}{\mlmac@oldbody}
+% \begin{macro}{\mlmac@cleaned@macname}
 % Recall that an environment definition is a shortcut for two macro
 % definitions: |\|\meta{name} and |\end|\meta{name} (where \meta{name}
-% was stored in |\plmac@envname| by |\plmac@newenvironment@i|).  After
-% defining |\|\meta{name}, |\plmac@havecode| transfers control to
-% |\plmac@end@environment| because |\plmac@next| was let-bound to
-% |\plmac@end@environment| in |\perl|[|re|]|newenvironment|.
+% was stored in |\mlmac@envname| by |\mlmac@newenvironment@i|).  After
+% defining |\|\meta{name}, |\mlmac@havecode| transfers control to
+% |\mlmac@end@environment| because |\mlmac@next| was let-bound to
+% |\mlmac@end@environment| in |\ocaml|[|re|]|newenvironment|.
 %
-% |\plmac@end@environment|'s purpose is to define |\end|\meta{name}.
+% |\mlmac@end@environment|'s purpose is to define |\end|\meta{name}.
 % This is a little tricky, however, because \LaTeX's
 % |\|[|re|]|newcommand| refuses to (re)define a macro whose name begins
-% with ``|end|''.  The solution that |\plmac@end@environment| takes is
-% first to define a |\plmac@end@macro| macro then (in |plmac@next|)
+% with ``|end|''.  The solution that |\mlmac@end@environment| takes is
+% first to define a |\mlmac@end@macro| macro then (in |mlmac@next|)
 % let-bind |\end|\meta{name} to it.  Other than that,
-% |\plmac@end@environment| is a combined and simplified version of
-% |\perlnewenvironment|, |\perlrenewenvironment|, and
-% |\plmac@newenvironment@i|.
+% |\mlmac@end@environment| is a combined and simplified version of
+% |\ocamlnewenvironment|, |\ocamlrenewenvironment|, and
+% |\mlmac@newenvironment@i|.
 %    \begin{macrocode}
-\def\plmac@end@environment{%
-  \expandafter\def\expandafter\plmac@next\expandafter{\expandafter
-    \let\csname end\plmac@envname\endcsname=\plmac@end@macro
-    \let\plmac@next=\relax
+\def\mlmac@end@environment{%
+  \expandafter\def\expandafter\mlmac@next\expandafter{\expandafter
+    \let\csname end\mlmac@envname\endcsname=\mlmac@end@macro
+    \let\mlmac@next=\relax
   }%
-  \def\plmac@macname{\plmac@end@macro}%
-  \expandafter\let\expandafter\plmac@oldbody\csname end\plmac@envname\endcsname
-  \expandafter\def\expandafter\plmac@cleaned@macname\expandafter{%
-    \expandafter\string\plmac@macname}%
-  \@ifnextchar[{\plmac@newcommand@ii}{\plmac@newcommand@ii[0]}%]
+  \def\mlmac@macname{\plmac@end@macro}%
+  \expandafter\let\expandafter\mlmac@oldbody\csname end\mlmac@envname\endcsname
+  \expandafter\def\expandafter\mlmac@cleaned@macname\expandafter{%
+    \expandafter\string\mlmac@macname}%
+  \@ifnextchar[{\mlmac@newcommand@ii}{\mlmac@newcommand@ii[0]}%]
 }
 %    \end{macrocode}
 % \end{macro}
@@ -1375,31 +1369,31 @@
 % \end{macro}
 %
 %
-% \subsubsection{Communication between \LaTeX{} and Perl}
+% \subsubsection{Communication between \LaTeX{} and OCaml}
 %
 % As shown in the previous section, when a document invokes
-% |\perl|[|re|]|newcommand| to define a macro, \perlmac{} defines the
-% macro in terms of a call to |\plmac@write@perl|.  In this section, we
-% learn how |\plmac@write@perl| operates.
+% |\ocaml|[|re|]|newcommand| to define a macro, \ocamlmac defines the
+% macro in terms of a call to |\mlmac@write@ocaml|.  In this section, we
+% learn how |\mlmac@write@ocaml| operates.
 %
-% At the highest level, \LaTeX-to-Perl communication is performed via
-% the filesystem.  In essence, \LaTeX{} writes a file (|\plmac@tofile|)
+% At the highest level, \LaTeX-to-OCaml communication is performed via
+% the filesystem.  In essence, \LaTeX{} writes a file (|\mlmac@tofile|)
 % corresponding to the information in either
-% Figure~\ref{fig:tofile-define} or Figure~\ref{fig:tofile-use}; Perl
+% Figure~\ref{fig:tofile-define} or Figure~\ref{fig:tofile-use}; OCaml
 % reads the file, executes the code within it, and writes a |.tex| file
-% (|\plmac@fromfile|); and, finally, \LaTeX{} reads and executes the new
+% (|\mlmac@fromfile|); and, finally, \LaTeX{} reads and executes the new
 % |.tex| file.  However, the actual communication protocol is a bit more
-% involved than that.  The problem is that Perl needs to know when
-% \LaTeX{} has finished writing Perl code and \LaTeX{} needs to know
-% when Perl has finished writing \LaTeX{} code.  The solution involves
-% introducing three extra files---|\plmac@toflag|, |\plmac@fromflag|,
-% and |\plmac@doneflag|---which are used exclusively for \LaTeX-to-Perl
+% involved than that.  The problem is that OCaml needs to know when
+% \LaTeX{} has finished writing OCaml code and \LaTeX{} needs to know
+% when OCaml has finished writing \LaTeX{} code.  The solution involves
+% introducing three extra files---|\mlmac@toflag|, |\mlmac@fromflag|,
+% and |\mlmac@doneflag|---which are used exclusively for \LaTeX-to-OCaml
 % synchronization.
 %
-% There's a catch: Although Perl can create and delete files, \LaTeX{}
+% There's a catch: Although OCaml can create and delete files, \LaTeX{}
 % can only create them.  Even worse, \LaTeX{} (more specifically,
 % te\TeX, which is the \TeX{} distribution under which I developed
-% \PerlTeX) cannot reliably poll for a file's \emph{non}existence; if a
+% \OCamlTeX) cannot reliably poll for a file's \emph{non}existence; if a
 % file is deleted in the middle of an |\immediate\openin|, |latex|
 % aborts with an error message.  These restrictions led to the
 % regrettably convoluted protocol illustrated in
@@ -1408,63 +1402,63 @@
 % exists''; and, ``Read'', ``Write'', and ``Delete'' are defined as
 % expected.  Assuming the filesystem performs these operations in a
 % sequentially consistent order (not necessarily guaranteed on all
-% filesystems, unfortunately), \PerlTeX{} should behave as expected.
+% filesystems, unfortunately), \OCamlTeX{} should behave as expected.
 %
 % \begin{figure}[htbp]
 %   \centering
 %   \makeatletter\setlength{\unitlength}{\baselineskip}\makeatother
 %   \DeleteShortVerb\|
-%   \def\topl{\texttt{\string\plmac@tofile}}
-%   \def\frpl{\texttt{\string\plmac@fromfile}}
-%   \def\tfpl{\texttt{\string\plmac@toflag}}
-%   \def\ffpl{\texttt{\string\plmac@fromflag}}
-%   \def\dfpl{\texttt{\string\plmac@doneflag}}
+%   \def\topl{\texttt{\string\mlmac@tofile}}
+%   \def\frpl{\texttt{\string\mlmac@fromfile}}
+%   \def\tfpl{\texttt{\string\mlmac@toflag}}
+%   \def\ffpl{\texttt{\string\mlmac@fromflag}}
+%   \def\dfpl{\texttt{\string\mlmac@doneflag}}
 %   \begin{tabular}{@{}c@{\hspace*{1cm}}|l@{~}l|c|l@{~}l|@{}}
 %     \multicolumn{1}{@{}c@{\hspace*{1cm}}}{Time} &
 %     \multicolumn{2}{c}{\LaTeX} &
 %     \multicolumn{1}{c}{} &
-%     \multicolumn{2}{c@{}}{Perl} \\
+%     \multicolumn{2}{c@{}}{OCaml} \\
 %
 %     \cline{2-3}\cline{5-6}
 %     \smash{\vector(0,-1){11}}
-%     & Write & \topl &               &        &       \\
-%     & Touch & \tfpl & $\rightarrow$ & Await  & \tfpl \\
-%     &       &       &               & Read   & \topl \\
-%     &       &       &               & Write  & \frpl \\
-%     &       &       &               & Delete & \tfpl \\
-%     &       &       &               & Delete & \topl \\
-%     &       &       &               & Delete & \dfpl \\
-%     & Await & \ffpl & $\leftarrow$  & Touch  & \ffpl \\
-%     & Read  & \frpl &               &        &       \\
-%     & Touch & \topl & $\rightarrow$ & Await  & \topl \\
-%     &       &       &               & Delete & \ffpl \\
-%     & Await & \dfpl & $\leftarrow$  & Touch  & \dfpl \\
+%     & Write & \toml &               &        &       \\
+%     & Touch & \tfml & $\rightarrow$ & Await  & \tfml \\
+%     &       &       &               & Read   & \toml \\
+%     &       &       &               & Write  & \frml \\
+%     &       &       &               & Delete & \tfml \\
+%     &       &       &               & Delete & \toml \\
+%     &       &       &               & Delete & \dfml \\
+%     & Await & \ffml & $\leftarrow$  & Touch  & \ffml \\
+%     & Read  & \frml &               &        &       \\
+%     & Touch & \toml & $\rightarrow$ & Await  & \toml \\
+%     &       &       &               & Delete & \ffml \\
+%     & Await & \dfml & $\leftarrow$  & Touch  & \dfml \\
 %     \cline{2-3}\cline{5-6}
 %   \end{tabular}
 %   \MakeShortVerb\|
-%   \caption{\LaTeX-to-Perl communication protocol}
+%   \caption{\LaTeX-to-OCaml communication protocol}
 %   \label{fig:comm-protocol}
 % \end{figure}
 %
-% \begin{macro}{\plmac@await@existence}
-% \begin{macro}{\ifplmac@file@exists}
-% \begin{macro}{\plmac@file@existstrue}
-% \begin{macro}{\plmac@file@existsfalse}
-% The purpose of the |\plmac@await@existence| macro is to repeatedly
+% \begin{macro}{\mlmac@await@existence}
+% \begin{macro}{\ifmlmac@file@exists}
+% \begin{macro}{\mlmac@file@existstrue}
+% \begin{macro}{\mlmac@file@existsfalse}
+% The purpose of the |\mlmac@await@existence| macro is to repeatedly
 % check the existence of a given file until the file actually exists.
 % For convenience, we use \LaTeXe's |\IfFileExists| macro to check the
-% file and invoke |\plmac@file@existstrue| or |\plmac@file@existsfalse|,
+% file and invoke |\mlmac@file@existstrue| or |\mlmac@file@existsfalse|,
 % as appropriate.
 %    \begin{macrocode}
-\newif\ifplmac@file@exists
+\newif\ifmlmac@file@exists
 %    \end{macrocode}
 %    \begin{macrocode}
-\newcommand{\plmac@await@existence}[1]{%
+\newcommand{\mlmac@await@existence}[1]{%
   \loop
     \IfFileExists{#1}%
-                 {\plmac@file@existstrue}%
-                 {\plmac@file@existsfalse}%
-    \ifplmac@file@exists
+                 {\mlmac@file@existstrue}%
+                 {\mlmac@file@existsfalse}%
+    \ifmlmac@file@exists
     \else
   \repeat
 }
@@ -1474,25 +1468,25 @@
 % \end{macro}
 % \end{macro}
 %
-% \begin{macro}{\plmac@outfile}
-% We define a file handle for |\plmac@write@perl@i| to use to create and
-% write |\plmac@tofile| and |\plmac@toflag|.
+% \begin{macro}{\mlmac@outfile}
+% We define a file handle for |\mlmac@write@ocaml@i| to use to create and
+% write |\mlmac@tofile| and |\mlmac@toflag|.
 %    \begin{macrocode}
-\newwrite\plmac@outfile
+\newwrite\mlmac@outfile
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{\plmac@write@perl}
-% |\plmac@write@perl| begins the \LaTeX-to-Perl data exchange, following
+% \begin{macro}{\mlmac@write@ocaml}
+% |\mlmac@write@ocaml| begins the \LaTeX-to-OCaml data exchange, following
 % the protocol illustrated in Figure~\ref{fig:comm-protocol}.
-% |\plmac@write@perl| prepares for the next piece of text in the input
+% |\mlmac@write@ocaml| prepares for the next piece of text in the input
 % stream to be read with ``special'' characters marked as category
 % code~12 (``other'').  This prevents \LaTeX{} from complaining if the
-% Perl code contains invalid \LaTeX{} (which it usually will).
-% |\plmac@write@perl| ends by passing control to |\plmac@write@perl@i|,
+% OCaml code contains invalid \LaTeX{} (which it usually will).
+% |\mlmac@write@ocaml| ends by passing control to |\mlmac@write@ocaml@i|,
 % which performs the bulk of the work.
 %    \begin{macrocode}
-\newcommand{\plmac@write@perl}{%
+\newcommand{\mlmac@write@ocaml}{%
   \begingroup
     \let\do\@makeother\dospecials
     \catcode`\^^M=\active
@@ -1500,39 +1494,35 @@
     \endlinechar=`\^^M
     \catcode`\{=1
     \catcode`\}=2
-    \plmac@write@perl@i
+    \mlmac@write@ocaml@i
 }
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{\plmac@write@perl@i}
-% When |\plmac@write@perl@i| begins executing, the category codes are
+% \begin{macro}{\mlmac@write@ocaml@i}
+% When |\mlmac@write@ocaml@i| begins executing, the category codes are
 % set up so that the macro's argument will be evaluated ``verbatim''
 % except for the part consisting of the \LaTeX\ code passed in by the
 % author, which is partially expanded.  Thus, everything is in place for
-% |\plmac@write@perl@i| to send its argument to Perl and read back the
+% |\mlmac@write@ocaml@i| to send its argument to Perl and read back the
 % (\LaTeX) result.
 %
-% Because\label{page:define-dummies} all of \perlmac's protocol
-% processing is encapsulated within |\plmac@write@perl@i|, this is the
-% only macro that strictly requires \perltex.  Consequently, we wrap the
-% entire macro definition within a check for \perltex.
+% Because\label{page:define-dummies} all of \ocamlmac's protocol
+% processing is encapsulated within |\mlmac@write@ocaml@i|, this is the
+% only macro that strictly requires \ocamltex.  Consequently, we wrap the
+% entire macro definition within a check for \ocamltex.
 %    \begin{macrocode}
-\ifplmac@have@perltex
-  \newcommand{\plmac@write@perl@i}[1]{%
+\ifnlmac@have@ocamltex
+  \newcommand{\nlmac@write@ocaml@i}[1]{%
 %    \end{macrocode}
-% The first step is to write argument |#1| to |\plmac@tofile|:
-% \changes{v1.1}{2004/02/19}{Made argument-handling more rational by
-%   making \texttt{\string\string\string\protect},
-%   \texttt{\string\string\string\begin}, and
-%   \texttt{\string\string\string\end} non-expandable}
+% The first step is to write argument |#1| to |\mlmac@tofile|:
 %    \begin{macrocode}
-      \immediate\openout\plmac@outfile=\plmac@tofile\relax
+      \immediate\openout\mlmac@outfile=\mlmac@tofile\relax
       \let\protect=\noexpand
       \def\begin{\noexpand\begin}%
       \def\end{\noexpand\end}%
-      \immediate\write\plmac@outfile{#1}%
-      \immediate\closeout\plmac@outfile
+      \immediate\write\mlmac@outfile{#1}%
+      \immediate\closeout\mlmac@outfile
 %    \end{macrocode}
 % \noindent
 % (In the future, it might be worth redefining |\def|, |\edef|, |\gdef|,
@@ -1541,89 +1531,83 @@
 % doesn't try to expand an undefined control sequence.)
 %
 % We're now finished using |#1| so we can end the group begun by
-% |\plmac@write@perl|, thereby resetting each character's category code
+% |\mlmac@write@ocaml|, thereby resetting each character's category code
 % back to its previous value.
 %    \begin{macrocode}
     \endgroup
 %    \end{macrocode}
 %
 % Continuing the protocol illustrated in Figure~\ref{fig:comm-protocol},
-% we create a zero-byte |\plmac@toflag| in order to notify \perltex{}
-% that it's now safe to read |\plmac@tofile|.
+% we create a zero-byte |\mlmac@toflag| in order to notify \ocamltex
+% that it's now safe to read |\mlmac@tofile|.
 %    \begin{macrocode}
-    \immediate\openout\plmac@outfile=\plmac@toflag\relax
-    \immediate\closeout\plmac@outfile
+    \immediate\openout\mlmac@outfile=\mlmac@toflag\relax
+    \immediate\closeout\mlmac@outfile
 %    \end{macrocode}
 %
-% To avoid reading |\plmac@fromfile| before \perltex{} has finished
-% writing it we must wait until \perltex{} creates |\plmac@fromflag|,
-% which it does only after it has written |\plmac@fromfile|.
+% To avoid reading |\mlmac@fromfile| before \ocamltex has finished
+% writing it we must wait until \ocamltex creates |\mlmac@fromflag|,
+% which it does only after it has written |\mlmac@fromfile|.
 %    \begin{macrocode}
-    \plmac@await@existence\plmac@fromflag
+    \mlmac@await@existence\mlmac@fromflag
 %    \end{macrocode}
 %
-% At this point, |\plmac@fromfile| should contain valid \LaTeX{} code.
+% At this point, |\mlmac@fromfile| should contain valid \LaTeX{} code.
 % However, we defer inputting it until we the very end.  Doing so
-% enables recursive and mutually recursive invocations of \PerlTeX{}
+% enables recursive and mutually recursive invocations of \OCamlTeX
 % macros.
-% \changes{v1.2}{2004/10/07}{Moved the
-%   \texttt{\string\string\string\input} of the generated Perl code to
-%   the end of the routine in order to support recursive \PerlTeX{}
-%   macro invocations.}
 %
 % Because \TeX{} can't delete files we require an additional
-% \LaTeX-to-Perl synchronization step.  For convenience, we recycle
-% |\plmac@tofile| as a synchronization file rather than introduce yet
-% another flag file to complement |\plmac@toflag|, |\plmac@fromflag|,
-% and |\plmac@doneflag|.
+% \LaTeX-to-OCaml synchronization step.  For convenience, we recycle
+% |\mlmac@tofile| as a synchronization file rather than introduce yet
+% another flag file to complement |\mlmac@toflag|, |\mlmac@fromflag|,
+% and |\mlmac@doneflag|.
 %    \begin{macrocode}
-    \immediate\openout\plmac@outfile=\plmac@tofile\relax
-    \immediate\closeout\plmac@outfile
-    \plmac@await@existence\plmac@doneflag
+    \immediate\openout\mlmac@outfile=\mlmac@tofile\relax
+    \immediate\closeout\mlmac@outfile
+    \mlmac@await@existence\mlmac@doneflag
 %    \end{macrocode}
 %
 % The only thing left to do is to |\input| and evaluate
-% |\plmac@fromfile|, which contains the \LaTeX{} output from the Perl
-% subroutine.
+% |\mlmac@fromfile|, which contains the \LaTeX{} output from the OCaml
+% function.
 %    \begin{macrocode}
-    \input\plmac@fromfile\relax
+    \input\mlmac@fromfile\relax
   }
 %    \end{macrocode}
 %
-% \changes{v1.1}{2004/02/24}{Added a dummy version of the macro to use
-%   if \texttt{latex} was launched directly, without \perltex}
 % The foregoing code represents the ``real'' definition of
-% |\plmac@write@perl@i|.  For the user's convenience, we define a dummy
-% version of |\plmac@write@perl@i| so that a document which utilizes
-% \perlmac{} can still compile even if not built using \perltex.  All
-% calls to macros defined with |\perl|[|re|]|newcommand| and all
-% invocations of environments defined with |\perl|[|re|]|newenvironment|
-% are replaced with ``\fbox{Perl\TeX}''.  A minor complication is that
+% |\mlmac@write@ocaml@i|.  For the user's convenience, we define a dummy
+% version of |\mlmac@write@ocaml@i| so that a document which utilizes
+% \ocamlmac can still compile even if not built using \ocamltex.  All
+% calls to macros defined with |\ocaml|[|re|]|newcommand| and all
+% invocations of environments defined with |\ocaml|[|re|]|newenvironment|
+% are replaced with ``\fbox{OCaml\TeX}''.  A minor complication is that
 % text can't be inserted before the |\begin{document}|.  Hence, we
-% initially define |\plmac@write@perl@i| as a do-nothing macro and
-% redefine it as ``|\fbox{Perl\TeX}|'' at the |\begin{document}|.
+% initially define |\mlmac@write@ocaml@i| as a do-nothing macro and
+% redefine it as ``|\fbox{OCaml\TeX}|'' at the |\begin{document}|.
 %    \begin{macrocode}
 \else
-  \newcommand{\plmac@write@perl@i}[1]{\endgroup}
+  \newcommand{\mlmac@write@ocaml@i}[1]{\endgroup}
   \AtBeginDocument{%
-    \renewcommand{\plmac@write@perl@i}[1]{%
+    \renewcommand{\mlmac@write@ocaml@i}[1]{%
 %    \end{macrocode}
-% \begin{macro}{\plmac@show@placeholder}
-% There's really no point in outputting a framed ``Perl\TeX'' when a
-% macro is defined \emph{and} when it's used.  |\plmac@show@placeholder|
+% \begin{macro}{\mlmac@show@placeholder}
+% There's really no point in outputting a framed ``OCaml\TeX'' when a
+% macro is defined \emph{and} when it's used.  |\mlmac@show@placeholder|
 % checks the first character of the protocol header.  If it's
 % ``D''~(|DEF|), nothing is output.  Otherwise, it'll be ``U''~(|USE|)
-% and ``Perl\TeX'' will be output.
+% and ``OCaml\TeX'' will be output.
 %    \begin{macrocode}
-      \def\plmac@show@placeholder##1##2\@empty{%
+      \def\mlmac@show@placeholder##1##2\@empty{%
         \ifx##1D\relax
           \endgroup
         \else
           \endgroup
-          \fbox{Perl\TeX}%
+          \fbox{OCaml\TeX}%
         \fi
       }%
-      \plmac@show@placeholder#1\@empty
+      \mlmac@show@placeholder#1\@empty
     }%
   }
 \fi
@@ -1638,7 +1622,7 @@
 % ^^A  Keep track of the number of lines of code in perltex.
 % \makeatletter
 % \immediate\write\@auxout{^^A
-%   \noexpand\gdef\noexpand\perlmaclines{\the\c@CodelineNo}}
+%   \noexpand\gdef\noexpand\ocamlmaclines{\the\c@CodelineNo}}
 % \makeatother
 %
 %
