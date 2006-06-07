@@ -62,7 +62,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{468}
+% ^^A \CheckSum{468}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -358,10 +358,10 @@
 % \item instead of simply specifying the number of macro arguments, comma separated names
 % are used instead.
 % \end{itemize}
-% %\perlmac{} even includes
-% %support for optional arguments and the starred forms of its commands
-% %(i.e.~|\perlnewcommand*|, |\perlrenewcommand*|, |\perlnewenvironment*|,
-% %and |\perlrenewenvironment*|).
+% ^^A \perlmac{} even includes
+% ^^A support for optional arguments and the starred forms of its commands
+% ^^A (i.e.~|\perlnewcommand*|, |\perlrenewcommand*|, |\perlnewenvironment*|,
+% ^^A and |\perlrenewenvironment*|).
 %
 % When the OCaml code is executed, it is placed within a function named
 % after the macro name but with ``|\|'' replaced with ``|latex_|''.  For
@@ -647,7 +647,7 @@
 %
 % Section~\ref{sec:implementation} is split into two main parts.
 % Section~\ref{sec:ocamlmacros} presents the source code for \ocamlmac,
-% the \LaTeX{} side of \OCamlTeX, and Section~\ref{sec:ocamltex} presents
+% the \LaTeX{} side of \OCamlTeX, and Section~\ref{sec:ocaml-env} presents
 % the source code for \ocamltex, the OCaml side of \OCamlTeX\@.
 % \makeatletter
 % \@ifundefined{ocamlmaclines}{}{^^A
@@ -716,7 +716,7 @@
 % \subsubsection{Package initialization}
 % \label{sec:package-init}
 %
-% \OcamlTeX defines six macros that are used for communication between
+% \OCamlTeX defines six macros that are used for communication between
 % OCaml and \LaTeX\@.  |\mllmac@tag| is a string of characters that should
 % never occur within one of the user's macro names, macro arguments, or
 % macro bodies.  \ocamltex therefore defines |\mlmac@tag| as a long
@@ -1408,11 +1408,11 @@
 %   \centering
 %   \makeatletter\setlength{\unitlength}{\baselineskip}\makeatother
 %   \DeleteShortVerb\|
-%   \def\topl{\texttt{\string\mlmac@tofile}}
-%   \def\frpl{\texttt{\string\mlmac@fromfile}}
-%   \def\tfpl{\texttt{\string\mlmac@toflag}}
-%   \def\ffpl{\texttt{\string\mlmac@fromflag}}
-%   \def\dfpl{\texttt{\string\mlmac@doneflag}}
+%   \def\toml{\texttt{\string\mlmac@tofile}}
+%   \def\frml{\texttt{\string\mlmac@fromfile}}
+%   \def\tfml{\texttt{\string\mlmac@toflag}}
+%   \def\ffml{\texttt{\string\mlmac@fromflag}}
+%   \def\dfml{\texttt{\string\mlmac@doneflag}}
 %   \begin{tabular}{@{}c@{\hspace*{1cm}}|l@{~}l|c|l@{~}l|@{}}
 %     \multicolumn{1}{@{}c@{\hspace*{1cm}}}{Time} &
 %     \multicolumn{2}{c}{\LaTeX} &
@@ -1643,7 +1643,7 @@
 %
 % \subsubsection{Header comments}
 %
-% Because \perltex{} is generated without a \textsf{DocStrip}
+% Because \ocamltex is generated without a \textsf{DocStrip}
 % preamble or postamble we have to manually include the desired
 % text as Perl comments.
 %
@@ -1670,7 +1670,7 @@
 % user's Perl code runs in a secure sandbox; if it's |0|, then arbitrary
 % Perl code is allowed to run.  |@permittedops| is a list of features
 % made available to the user's Perl code.  Valid values are described in
-% Perl's |Opcode| manual page.  \perltex's default is a list containing
+% Perl's |Opcode| manual page.  \ocamltex's default is a list containing
 % only |:browse|.
 % \end{perlmacro}
 % \end{perlmacro}
@@ -1688,17 +1688,17 @@
 % \begin{perlmacro}{$logfile}
 % \begin{perlmacro}{$sandbox}
 % \begin{perlmacro}{$latexpid}
-% |$progname| is the run-time name of the \perltex{} program.
+% |$progname| is the run-time name of the \ocamltex program.
 % |$jobname| is the base name of the user's |.tex| file, which defaults
 % to the \TeX{} default of |texput|.  |@latexcmdline| is the command
 % line to pass to the \LaTeX{} executable.  |$toperl| defines the
-% filename used for \LaTeX{}$\rightarrow$Perl communication.
+% filename used for \LaTeX{}$\rightarrow$OCaml communication.
 % |$fromperl| defines the filename used for Perl$\rightarrow$\LaTeX{}
 % communication.  |$toflag| is the name of a file that will exist only
 % after \LaTeX{} creates |$tofile|.  |$fromflag| is the name of a file
 % that will exist only after Perl creates |$fromfile|.  |$doneflag| is
-% the name of a file that will exist only after Perl deletes
-% |$fromflag|.  |$logfile| is the name of a log file to which \perltex{}
+% the name of a file that will exist only after OCaml deletes
+% |$fromflag|.  |$logfile| is the name of a log file to which \ocamltex
 % writes verbose execution information.  |$sandbox| is a secure sandbox
 % in which to run code that appeared in the \LaTeX{} document.
 % |$latexpid| is the process~ID of the |latex| process.
@@ -1716,10 +1716,10 @@
 %
 % \subsubsection{Command-line conversion}
 %
-% In this section, \perltex{} parses its own command line and prepares a
+% In this section, \ocamltex parses its own command line and prepares a
 % command line to pass to |latex|.
 %
-% \paragraph{Parsing \perltex's command line}
+% \paragraph{Parsing \ocamltex's command line}
 % We first set |$latexprog| to be the contents of the environment
 % variable |PERLTEX| or the value ``|latex|'' if |PERLTEX| is not
 % specified.  We then use |Getopt::Long| to parse the command line,
@@ -1746,7 +1746,7 @@
 % assign |$toperl|, |$fromperl|, |$toflag|, |$fromflag|, |$doneflag|,
 % and |$logfile| in terms of |$jobname| plus a suitable extension.
 %
-% We now replace the filename of the |.tex| file passed to \perltex{}
+% We now replace the filename of the |.tex| file passed to \ocamltex
 % with a |\def|inition of the separator character, |\def|initions of the
 % various files, and the original file with |\input| prepended if
 % necessary.
@@ -1758,10 +1758,10 @@
 % over from a previous (aborted) run.  We also create a log file,
 % |$logfile|.  As |@latexcmdline| contains the complete command line to
 % pass to |latex| we need only |fork| a new process and have the child
-% process overlay itself with |latex|.  \perltex{} continues running as
+% process overlay itself with |latex|.  \ocamltex continues running as
 % the parent.
 %
-% Note that here and elsewhere in \perltex, |unlink| is called
+% Note that here and elsewhere in \ocamltex, |unlink| is called
 % repeatedly until the file is actually deleted.  This works around a
 % race condition that occurs in some filesystems in which file deletions
 % are executed somewhat lazily.
@@ -1770,7 +1770,7 @@
 %
 % \subsubsection{Communicating with \LaTeX{}}
 %
-% The following code constitutes \perltex's main loop.  Until |latex|
+% The following code constitutes \ocamltex's main loop.  Until |latex|
 % exits, the loop repeatedly reads Perl code from \LaTeX{}, evaluates
 % it, and returns the result as per the protocol described in
 % Figure~\vref{fig:comm-protocol}.
@@ -1780,7 +1780,7 @@
 % \begin{perlmacro}{$awaitexists}
 % We define a local subroutine |$awaitexists| which waits for a given
 % file to exist.  If |latex| exits while |$awaitexists| is waiting, then
-% \perltex{} cleans up and exits, too.
+% \ocamltex cleans up and exits, too.
 % \changes{v1.0a}{2003/08/06}{Bug fix: Added ``\texttt{undef
 %   \$latexpid}'' to make the \texttt{END} block correctly return a
 %   status code of~0 on success}
@@ -2200,7 +2200,6 @@ ocamltex accepts the following command-line options
 (* Set everything in motion *)
 let _ = main () 
 %    \end{macrocode}
-% \fi
 %
 % \iffalse
 %</ocamltex>
