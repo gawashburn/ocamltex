@@ -23,24 +23,27 @@
 %<package>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
 %<package>\ProvidesPackage{ocamltex}
 %<*package>
-    [2004/10/07 v0.6 LaTeX macros for use with OCamlTeX]
+    [2006/07/02 v0.6 LaTeX macros for use with OCamlTeX]
 %</package>
 %
 %<*driver>
 \documentclass{ltxdoc}
 \makeatletter
-  \def\plmac@tag{FakingBeingRunFromOCamlTeX}
-  \def\plmac@tofile{\jobname.toml}
-  \def\plmac@fromfile{\jobname.frml}
-  \def\plmac@toflag{\jobname.tfml}
-  \def\plmac@fromflag{\jobname.ffml}
-  \def\plmac@doneflag{\jobname.dfml}
+  \def\mlmac@pid{0}
+  \def\mlmac@tag{FakingBeingRunFromOCamlTeX}
+  \def\mlmac@tofile{\jobname.toml}
+  \def\mlmac@fromfile{\jobname.frml}
+  \def\mlmac@toflag{\jobname.tfml}
+  \def\mlmac@fromflag{\jobname.ffml}
+  \def\mlmac@doneflag{\jobname.dfml}
 \makeatother
 \usepackage{ocamltex}
 \usepackage{xspace}
 \usepackage{varioref}
 \usepackage{flafter}
 \usepackage{textcomp}
+\usepackage{palatino}
+\usepackage{euler}
 \IfFileExists{hyperref.sty}{%
   \usepackage{hyperref}
   \hypersetup{%
@@ -104,20 +107,16 @@
 % \DoNotIndex{\the}
 % \DoNotIndex{\W}
 %
-% ^^A  Abbreviation for text figures.  I use \textsc instead of 
-% ^^A \oldstylenums because in my experience \oldstylenums does not 
-% ^^A always use the text figures for the current font.  I have found
-% ^^A \textsc works more reliably.
-% \newcommand{\osn}[1]{\textsc{#1}} 
+% \newcommand{\osn}[1]{\oldstylenums{#1}} 
 %
-% \newcommand{\OCamlTeX}{OCaml\TeX{}\xspace}           ^^A  Name of the complete system
+% \newcommand{\OCamlTeX}{OCaml\TeX{}\xspace}           ^^A  Name of the OCamlTeX system
 % \newcommand{\PerlTeX}{Perl\TeX{}\xspace}             ^^A  Name of the PerlTeX system
-% \newcommand{\ocamltex}{\texttt{ocamltex.pl}\xspace}  ^^A  Name of the Perl script
+% \newcommand{\ocamltex}{\texttt{ocamltex.ml}\xspace}  ^^A  Name of the OCaml script
 % \newcommand{\ocamlmac}{\texttt{ocamltex.sty}\xspace} ^^A  Name of the LaTeX package
 %
-% ^^A  Define an environment just like macro but for Perl scalars or lists.
+% ^^A  Define an environment just like macro but for OCaml variables.
 % \makeatletter
-% \newenvironment{perlmacro}[1]{^^A
+% \newenvironment{ocamlmacro}[1]{^^A
 %   \begingroup
 %     \def\PrintMacroName##1{\strut\MacroFont\string##1\ }^^A
 %     \def\SpecialIndex@##1##2{^^A
@@ -133,7 +132,7 @@
 % }
 % \makeatother
 %
-% \title{\OCamlTeX---defining {\LaTeX} macros in terms of Perl code^^A
+% \title{\OCamlTeX---defining {\LaTeX} macros in terms of OCaml code^^A
 %   \thanks{This document corresponds to \OCamlTeX~\fileversion, dated
 %   \filedate.}}
 % \author{Geoffrey Washburn \\ \texttt{washburn@acm.org}}
@@ -158,11 +157,13 @@
 % macro package for \TeX, does little to simplify \TeX{} programming.
 % 
 % OCaml is a general-purpose programming language, designed with program safety
-% and reliability in mind.  It is very expressive, yet easy to learn and use.
-% Caml supports functional, imperative, and object-oriented programming styles.
-% It has been developed and distributed by \textsc{INRIA}, France's national
-% research institute for computer science, since \osn{1985}. OCaml does not
-% have any direct support for typesetting itself.
+% and reliability in mind~\cite{OCaml}.  It is very expressive, yet easy to
+% learn and use.  Caml supports functional, imperative, and object-oriented
+% programming styles.  It has been developed and distributed since \osn{1985}
+% by \textsc{inria}, France's national research institute for computer science.
+% OCaml does not have any direct support for typesetting itself.  However,
+% Achim Blumensath has reimplemented many of the algorithms found in \TeX\ and
+% code for manipulating related file formats in the Ant system~\cite{Ant}.
 %
 % \OCamlTeX's goal is to bridge these two worlds.  It enables the
 % construction of documents that are primarily \LaTeX-based but contain
@@ -175,7 +176,7 @@
 % authors are sufficiently versed in the \TeX{} language to be able to
 % express such a macro.  However, a word-reversal function is easy to
 % express in OCaml: one need only |split| a string into a list of words,
-% |reverse| the list, and |join| it back together.  The following is how
+% |rev| the list, and |concat| it back together.  The following is how
 % a |\reversewords| macro could be defined using \OCamlTeX:
 %
 % \begin{verbatim}
@@ -185,21 +186,21 @@
 % \end{verbatim}
 %
 % \noindent
-% Then, executing ``\texttt{\string\reversewords\string{Try doing this
-% without OCaml!\string}}'' in a document would produce the text ``OCaml!
-% without this doing Try''.  Simple, isn't it?
-%
-% As another example, think about how you'd write a macro in \LaTeX{} to
+% Then, executing ``\texttt{\string\reversewords\string{Try doing this without
+% OCaml!\string}}'' in a document would produce the text ``OCaml!  without this
+% doing Try''.  Simple, no?
+% 
+% As another example, think about how you would write a macro in \LaTeX{} to
 % extract a substring of a given string when provided with a starting
-% position and a length.  OCaml has an built-in |substr| function and
+% position and a length.  OCaml has an built-in |sub| function and
 % \OCamlTeX{} makes it easy to export this to \LaTeX:
-%
+% ^^A
 % \begin{verbatim}
 %   \ocamlnewcommand{\substr}[str,strt,len]{
 %     String.sub str (int_of_string strt) (int_of_string len)
 %   }
 % \end{verbatim}
-%
+% ^^A
 % |\substr| can then be used just like any other \LaTeX{} macro---and as
 % simply as OCaml's |String.sub| function:
 %
@@ -208,7 +209,8 @@
 % \noindent|   |^^A
 % \begin{tabular}{@{}l@{}}
 %    |\newcommand{\str}{uniformly}| \\
-%    |A sample substring of ``\str'' is ``\str'' is ``\substr{\str}{6}{2}''.| \\[1ex]
+%    |A sample substring of ``\str'' is ``\str'' is| \\
+%    |``\substr{\str}{6}{2}''.| \\[1ex]
 %    \multicolumn{1}{@{}c@{}}{\Huge$\Downarrow$} \\[2ex]
 %    \multicolumn{1}{@{}c@{}}{A sample substring of ``uniformly'' is ``ml''.}
 % \end{tabular}
@@ -231,7 +233,8 @@
 %    let rec genMatrix j mSize = 
 %        (if (j = mSize) then []
 %         else
-%          ((String.concat " & " (genRow 0 j mSize)) ^ "\\\\ \n")::(genMatrix (j+1) mSize)) in
+%          ((String.concat " & " (genRow 0 j mSize)) ^ "\\\\ \n")::
+            (genMatrix (j+1) mSize)) in
 %    let sizeInt = (int_of_string size) in       
 %      ("\\[\n\\renewcommand{\\arraystretch}{1.3}\n") ^
 %      ("\\begin{array}{") ^ (String.make sizeInt 'c') ^ ("}\n") ^
@@ -354,40 +357,50 @@
 % to their \LaTeXe{} counterparts---|\newcommand|, |\renewcommand|, 
 % |\newenvironment|, and |\renewenvironment|.  The two primary differences are 
 % \begin{itemize} 
-% \item the macro body consists of OCaml code that dynamically generates \LaTeX{} code,
+% \item the macro body consists of an OCaml expression that generates an OCaml string containing \LaTeX{} code,
 % \item instead of simply specifying the number of macro arguments, comma separated names
 % are used instead.
 % \end{itemize}
-% ^^A \perlmac{} even includes
+% ^^A \ocamlmac{} even includes
 % ^^A support for optional arguments and the starred forms of its commands
 % ^^A (i.e.~|\perlnewcommand*|, |\perlrenewcommand*|, |\perlnewenvironment*|,
 % ^^A and |\perlrenewenvironment*|).
 %
-% When the OCaml code is executed, it is placed within a function named
+% When the OCaml expression is evaluated, it is placed within a function named
 % after the macro name but with ``|\|'' replaced with ``|latex_|''.  For
 % example, a \OCamlTeX-defined \LaTeX{} macro called |\myMacro| produces
 % an OCaml function called |latex_myMacro|.  The named macro arguments are
 % converted to OCaml function arguments of type |string|.  
 %
 % Any valid OCaml expressions can be used in the body of a macro.  However, 
-% because it is important to be able to 
-%
-% A environment is used for the entire |latex| run.  This means that multiple
-% macros defined by |\ocamlnewcommand| can invoke each other.  It also means
-% that reference cells persist across macro calls:
+% because there are some languages features that cannot be used inside of expressions,
+% we provide another macro, |\ocamlexec|, that can be used to execute OCaml top-level
+% commands.  For example, many interesting uses of OCaml require the definition of new
+% data types.  If we wanted to define a new type for binary trees for use by later macros,
+% we might use the following \LaTeX\ code.
+% ^^A
+% \begin{verbatim}
+% \ocamlexec{type mytree = Leaf | Node of mytree * mytree}
+% \end{verbatim}
+% ^^A
+% The same OCaml environment is used for the entire |latex| run, so unless a
+% data type definition is shadowed, it will remain in scope for the remainder
+% of the program.  Therefore macros defined by |\ocamlnewcommand| can invoke
+% each other.  It also means that reference cells persist across macro calls:
 %
 % \bigskip
 %
 % \noindent|   |^^A
 % \begin{tabular}{@{}l@{}}
-%    |\perlnewcommand{\setX}[1]{$x = $_[0]; return ""}| \\
-%    |\perlnewcommand{\getX}{'$x$ was set to ' . $x . '.'}| \\
+%    |\ocamlexec{val x = ref ""}| \\
+%    |\ocamlnewcommand{\setX}[arg]{x := arg; "\relax"}| \\
+%    |\ocamlnewcommand{\getX}{"$x$ was set to " ^ (!x) ^ "."}| \\
 %    |\setX{123}| \\
 %    |\getX| \\
 %    |\setX{456}| \\
 %    |\getX| \\[1ex]
 %    \multicolumn{1}{@{}c@{}}{\Huge$\Downarrow$} \\[2ex]
-%    \multicolumn{1}{@{}c@{}}{$x$ was set to 123.  $x$ was set to 456.} \\
+%    \multicolumn{1}{@{}c@{}}{$x$ was set to \osn{123}.  $x$ was set to \osn{456}.} \\
 % \end{tabular}
 %
 % \bigskip
@@ -415,8 +428,8 @@
 % \subsection{Invoking \ocamltex}
 % \label{sec:ocamltex-man}
 %
-% The following pages reproduce the \ocamltex{} program documentation.
-% Key parts of the documentation are excerpted when \ocamltex{} is
+% The following pages reproduce the \ocamltex program documentation.
+% Key parts of the documentation are excerpted when \ocamltex is
 % invoked with the |--help| option. 
 %
 % \clearpage
@@ -425,23 +438,18 @@
 % \def\section#1{}
 % \let\subsection=\subsubsection
 %
-% ^^A  ***************************************************************
-% ^^A  * The following was generated using pod2latex and touched up  *
-% ^^A  * slightly to make it better match the rest of this document. *
-% ^^A  ***************************************************************
-%
 % \def\C++{{\rm C\kern-.05em\raise.3ex\hbox{\footnotesize ++}}}
 % \def\underscore{\leavevmode\kern.04em\vbox{\hrule width 0.4em height 0.3pt}}
 % \setlength{\parindent}{0pt}
 %
-% \section{PERLTEX.PL}%
-% \index{PERLTEX.PL}
+% \section{OCAMLTEX.ML}%
+% \index{OCAMLTEX.ML}
 %
 % \subsection*{NAME}
-% perltex --- enable \LaTeX{} macros to be defined in terms of Perl code
+% ocamltex --- enable \LaTeX{} macros to be defined in terms of OCaml code
 %
 % \subsection*{SYNOPSIS}
-% perltex
+% ocamltex
 % {\tt [}{\bf {\tt --}help}{\tt ]}
 % {\tt [}{\bf {\tt --}latex}={\em program\/}{\tt ]}
 % {\tt [}{\bf {\tt --}}{\tt [}{\bf no}{\tt ]}{\bf safe}{\tt ]}
@@ -451,10 +459,7 @@
 % \subsection*{DESCRIPTION}
 % \LaTeX{} --- through the underlying \TeX{} typesetting system --- produces
 % beautifully typeset documents but has a macro language that is
-% difficult to program.  In particular, support for complex string
-% manipulation is largely lacking.  Perl is a popular general-purpose
-% programming language whose forte is string manipulation.  However, it
-% has no typesetting capabilities whatsoever.
+% difficult to program.  
 %
 % \bigskip
 %
@@ -476,7 +481,7 @@
 %
 % \begin{description}
 %
-% \item[{\bf {\tt --}help}]%
+% \item[{\bf {\tt -}h $\mid$ {\tt --}h $\mid$ {\tt -}help $\mid$ {\tt --}help}]%
 % \index{--help@{\bf {\tt --}help}}%
 % \hfil\\
 % Display basic usage information.
@@ -488,25 +493,6 @@
 % {\tt --latex=pdf{}latex} would typeset the given document using
 % {\bf pdf{}latex} instead of ordinary {\bf latex}.
 %
-% \item[{\bf {\tt --}}{\tt [}{\bf no}{\tt ]}{\bf safe}]%
-% \index{--[no]safe@{\bf {\tt --}}{\tt [}{\bf no}{\tt ]}{\bf safe}}%
-% \hfil\\
-% Enable or disable sandboxing.  With the default of {\tt --safe},
-% {\bf perltex} executes the code from a {\tt \char`\\perlnewcommand} or
-% {\tt \char`\\perlrenewcommand} macro within a protected environment that
-% prohibits ``unsafe'' operations such as accessing files or executing
-% external programs.  Specifying {\tt --nosafe} gives the \LaTeX{} document
-% {\em carte blanche\/} to execute any arbitrary Perl code, including that
-% which can harm the user's files.  See the {\em Safe\/} manpage for more information.
-%
-% \item[{\bf {\tt --}permit}={\em feature\/}]%
-% \index{--permit=feature@{\bf {\tt --}permit}={\em feature\/}}%
-% \hfil\\
-% Permit particular Perl operations to be performed.  The {\tt --permit}
-% option, which can be specified more than once on the command line,
-% enables finer-grained control over the {\bf perltex} sandbox.  See
-% the {\em Opcode\/} manpage for more information.
-%
 % \end{description}
 %
 % These options are then followed by whatever options are normally
@@ -515,101 +501,80 @@
 % compile.
 %
 % \subsection*{EXAMPLES}
-% In its simplest form, {\bf perltex} is run just like {\bf latex}:
+% In its simplest form, {\bf ocamltex} is run just like {\bf latex}:
 % \begin{verbatim}
-%     perltex myfile.tex
+%     ocamltex myfile.tex
 % \end{verbatim}
 %
 % To use {\bf pdf{}latex} instead of regular {\bf latex}, use the {\tt --latex}
 % option:
 % \begin{verbatim}
-%     perltex --latex=pdflatex myfile.tex
-% \end{verbatim}
-%
-% If \LaTeX{} gives a ``{\tt trapped by operation mask}'' error and you
-% trust the {\em .tex\/} file you're trying to compile not to execute
-% malicious Perl code (e.g., because you wrote it yourself), you can
-% disable {\bf perltex}'s safety mechansisms with {\tt --nosafe}:
-% \begin{verbatim}
-%     perltex --nosafe myfile.tex
-% \end{verbatim}
-%
-% The following command gives documents only {\bf perltex}'s default
-% permissions ({\tt :browse}) plus the ability to open files and invoke the
-% {\tt time} command:
-% \begin{verbatim}
-%     perltex --permit=:browse --permit=:filesys_open
-%       --permit=time myfile.tex
+%     ocamltex --latex=pdflatex myfile.tex
 % \end{verbatim}
 %
 % \subsection*{ENVIRONMENT}
-% {\bf perltex} honors the following environment variables:
+% {\bf ocamltex} honors the following environment variables:
 %
 % \begin{description}
 %
-% \item[PERLTEX]%
-% \index{PERLTEX@PERLTEX}%
+% \item[OCAMLTEX]%
+% \index{OCAMLTEX@OCAMLTEX}%
 % \hfil\\
 % Specify the filename of the \LaTeX{} compiler.  The \LaTeX{} compiler
-% defaults to ``{\tt latex}''.  The {\tt PERLTEX} environment variable
+% defaults to ``{\tt latex}''.  The {\tt OCAMLTEX} environment variable
 % overrides this default, and the {\tt --latex} command-line option (see
 % the {\tt OPTIONS} entry elsewhere in this document) overrides that.
 %
 % \end{description}
 %
 % \subsection*{FILES}
-% While compiling {\em jobname.tex\/}, {\bf perltex} makes use of the following
+% While compiling {\em jobname.tex\/}, {\bf ocamltex} makes use of the following
 % files:
 %
 % \begin{description}
 %
-% \item[{\em jobname.lgpl\/}]%
-% \index{jobname.lgpl@{\em jobname.lgpl\/}}%
+% \item[{\em jobname.lgml\/}]%
+% \index{jobname.lgml@{\em jobname.lgml\/}}%
 % \hfil\\
-% log file written by Perl; helpful for debugging Perl macros
+% log file written by OCaml; helpful for debugging OCaml macros
 %
-% \item[{\em jobname.topl\/}]%
-% \index{jobname.topl@{\em jobname.topl\/}}%
+% \item[{\em jobname.toml\/}]%
+% \index{jobname.toml@{\em jobname.toml\/}}%
 % \hfil\\
-% information sent from \LaTeX{} to Perl
+% information sent from \LaTeX{} to OCaml
 %
-% \item[{\em jobname.frpl\/}]%
-% \index{jobname.frpl@{\em jobname.frpl\/}}%
+% \item[{\em jobname.frml\/}]%
+% \index{jobname.frml@{\em jobname.frml\/}}%
 % \hfil\\
-% information sent from Perl to \LaTeX{}
+% information sent from OCaml to \LaTeX{}
 %
-% \item[{\em jobname.tfpl\/}]%
-% \index{jobname.tfpl@{\em jobname.tfpl\/}}%
+% \item[{\em jobname.tfml\/}]%
+% \index{jobname.tfml@{\em jobname.tfml\/}}%
 % \hfil\\
-% ``flag'' file whose existence indicates that {\em jobname.topl\/} contains
+% ``flag'' file whose existence indicates that {\em jobname.toml\/} contains
 % valid data
 %
-% \item[{\em jobname.ffpl\/}]%
-% \index{jobname.ffpl@{\em jobname.ffpl\/}}%
+% \item[{\em jobname.ffml\/}]%
+% \index{jobname.ffml@{\em jobname.ffml\/}}%
 % \hfil\\
-% ``flag'' file whose existence indicates that {\em jobname.frpl\/} contains
+% ``flag'' file whose existence indicates that {\em jobname.frml\/} contains
 % valid data
 %
-% \item[{\em jobname.dfpl\/}]%
-% \index{jobname.dfpl@{\em jobname.dfpl\/}}%
+% \item[{\em jobname.dfml\/}]%
+% \index{jobname.dfpl@{\em jobname.dfml\/}}%
 % \hfil\\
-% ``flag'' file whose existence indicates that {\em jobname.ffpl\/} has been
+% ``flag'' file whose existence indicates that {\em jobname.ffml\/} has been
 % deleted
 %
 % \end{description}
 %
-% \subsection*{NOTES}
-% {\bf perltex}'s sandbox defaults to what the {\em Opcode\/} manpage calls ``{\tt :browse}''.
-%
 % \subsection*{SEE ALSO}
-% {\em latex\/}(1), {\em pdf{}latex\/}(1), {\em perl\/}(1), {\em Safe\/}(3pm), {\em Opcode\/}(3pm)
+% {\em latex\/}(1), {\em pdf{}latex\/}(1), {\em ocaml\/}(1),
 %
-% \subsection*{AUTHOR}
+% \subsection*{AUTHORS}
+% Geoffrey Washburn, {\em washburn@acm.org\/} \\
 % Scott Pakin, {\em scott+pt@pakin.org\/}
 %
-% ^^A  ***********************************
-% ^^A  * End of generated pod2latex text *
-% ^^A  ***********************************
 % \endgroup
 % \clearpage
 %
@@ -619,6 +584,7 @@
 %   \label{sec:license}
 %
 %   \begin{center}
+%   Copyright \textcopyright{} 2006 by Geoffrey Washburn \texttt{<washburn@acm.org>} \\
 %   Copyright \textcopyright{} 2004 by Scott Pakin \texttt{<scott+pt@pakin.org>}
 %   \end{center}
 %
@@ -659,17 +625,18 @@
 %   is only \the\ocamltex@lines{} lines of OCaml.
 % }
 % \makeatother
-% \ocamltex is fairly straightforward OCaml code and shouldn't be too
-% difficult to understand by anyone comfortable with OCaml programming.
-% \ocamlmac, in contrast, contains a bit of {\LaTeX} trickery and is
-% probably impenetrable to anyone who hasn't already tried his hand at
-% \LaTeX{} programming.  Fortunately for the reader, the code is
-% profusely commented so the aspiring {\LaTeX} guru may yet learn
-% something from it.
+% \ocamltex is fairly straightforward OCaml code and should not be too difficult
+% to understand by anyone comfortable with OCaml programming.  \ocamlmac, in
+% contrast, contains a bit of {\LaTeX} trickery and is probably impenetrable to
+% anyone who hasn't already tried her hand at {\LaTeX} programming.
+% Fortunately for the reader, the code is profusely commented so the aspiring
+% {\LaTeX} guru may yet learn from it.
 %
-% After documenting the \ocamlmac and \ocamltex source code, a few
-% suggestions are provided for porting \OCamlTeX to use a backend
-% language other than OCaml (Section~\ref{sec:porting}).
+% After documenting the \ocamlmac and \ocamltex source code, a few suggestions
+% are provided for porting \OCamlTeX to use a backend language other than OCaml
+% (Section~\ref{sec:porting}), differences from \PerlTeX
+% (Section~\ref{sec:differences}), as well as information on future
+% enchancements (Section~\ref{sec:future}.
 %
 % \subsection{\ocamlmac}
 % \label{sec:ocamlmacros}
@@ -678,9 +645,7 @@
 %<*package>
 % \fi
 %
-% Although I've written a number of \LaTeX{} packages, \ocamlmac{} was
-% the most challenging to date.  The key things I needed to learn how to
-% do include the following:
+% The key \LaTeX\ wizardry required to make \ocamlmac possible includes: 
 %
 % \begin{enumerate}
 %   \item storing brace-matched---but otherwise not valid \LaTeX---code
@@ -689,11 +654,11 @@
 %   \item iterating over a macro's arguments
 % \end{enumerate}
 %
-% Storing non-\LaTeX{} code in a variable involves beginning a group in
-% an argumentless macro, fiddling with category codes, using
-% |\afterassignment| to specify a continuation function, and storing the
+% Storing non-\LaTeX\ code in a variable involves beginning a group in
+% an argument-less macro, fiddling with category codes, using
+% |\afterassignment| to specify a continuation, and storing the
 % subsequent brace-delimited tokens in the input stream into a token
-% register.  The continuation function, which also takes no arguments,
+% register.  The continuation, which also takes no arguments,
 % ends the group begun in the first function and proceeds using the
 % correctly |\catcode|d token register.  This technique appears in
 % |\mlmac@haveargs| and |\mlmac@havecode| and in a simpler form
@@ -702,16 +667,12 @@
 %
 % Iterating over a macro's arguments is hindered by \TeX's requirement
 % that ``|#|'' be followed by a number or another ``|#|''.  The
-% technique I discovered (which is used by the Texinfo source code) is
+% technique used (which originates from the Texinfo source code) is
 % first to |\let| a variable be |\relax|, thereby making it
 % unexpandable, then to define a macro that uses that variable followed
 % by a loop variable, and finally to expand the loop variable and |\let|
 % the |\relax|ed variable be ``|#|'' right before invoking the macro.
 % This technique appears in |\mlmac@havecode|.
-%
-% I hope you find reading the {\ocamlmac} source code instructive.
-% Writing it certainly was.
-%
 %
 % \subsubsection{Package initialization}
 % \label{sec:package-init}
@@ -735,8 +696,11 @@
 %   \label{tbl:variables}
 %   \begin{tabular}{@{}lll@{}}
 %     \hline
-%     Variable & Purpose & \ocamltex{} assignment \\
+%     Variable & Purpose & \ocamltex assignment \\
 %     \hline
+%
+%     |\mlmac@pid| & Used to identity stale files &
+%     (\ocamltex process id) \\
 %
 %     |\mlmac@tag| & |\mlmac@tofile| field separator &
 %     (20 random letters) \\
@@ -747,13 +711,13 @@
 %     |\mlmac@fromfile| & OCaml $\rightarrow$ \LaTeX{} communication &
 %     |\jobname.frml| \\
 %
-%     |\mlmac@toflag| & |\mlmac@tofile| synchronization &
+%     |\mlmac@toflag| & |\mlmac@tofile| synching &
 %     |\jobname.tfml| \\
 %
-%     |\mlmac@fromflag| & |\mlmac@fromfile| synchronization &
+%     |\mlmac@fromflag| & |\mlmac@fromfile| synching &
 %     |\jobname.ffml| \\
 %
-%     |\mlmac@doneflag| & |\mlmac@fromflag| synchronization &
+%     |\mlmac@doneflag| & |\mlmac@fromflag| synching &
 %     |\jobname.dfml| \\
 %
 %     \hline
@@ -767,17 +731,32 @@
 % variables listed in Table~\ref{tbl:variables}.  If any variable is not
 % defined, \ocamlmac gives an error message and---as we shall see on
 % page~\pageref{page:define-dummies}---defines dummy versions of
-% |\ocaml|[|re|]|newcommand| and |\ocaml|[|re|]|newenvironment|.
+% |\ocaml|[|re|]|newcommand|, |\ocaml|[|re|]|newenvironment|, and |\ocamlexec|.
 %    \begin{macrocode}
-\newif\ifplmac@have@perltex
-\plmac@have@perltextrue
+\newif\ifmlmac@have@ocamltex
+\mlmac@have@ocamltextrue
+\@ifundefined{mlmac@pid}{\mlmac@have@ocamltexfalse}{}
 \@ifundefined{mlmac@tag}{\mlmac@have@ocamltexfalse}{}
 \@ifundefined{mlmac@tofile}{\mlmac@have@ocamltexfalse}{}
 \@ifundefined{mlmac@fromfile}{\mlmac@have@ocamltexfalse}{}
-\@ifundefined{mlmac@toflag}{\plmac@have@ocamltexfalse}{}
-\@ifundefined{mlmac@fromflag}{\plmac@have@ocamltexfalse}{}
-\@ifundefined{mlmac@doneflag}{\plmac@have@perltexfalse}{}
-\ifnlmac@have@ocamltex
+\@ifundefined{mlmac@toflag}{\mlmac@have@ocamltexfalse}{}
+\@ifundefined{mlmac@fromflag}{\mlmac@have@ocamltexfalse}{}
+\@ifundefined{mlmac@doneflag}{\mlmac@have@ocamltexfalse}{}
+
+% These are really hackish macros to calculate the length of a comma
+% separated list of argument names.
+
+\def\getlength@i#1{\ifx#1\end \let\next=\relax 
+ \else
+   \ifx#1\comma \advance\count0 by1 \let\next=\getlength@ii 
+     \else \let\next=\getlength@ii\fi\fi \next}
+
+\def\getlength@ii#1{\ifx#1\end \advance\count0 by1 \let\next=\relax 
+ \else
+   \ifx#1\comma \advance\count0 by1 \let\next=\getlength@ii 
+     \else \let\next=\getlength@ii\fi\fi \next}
+
+\ifmlmac@have@ocamltex
 \else
   \PackageError{ocamltex}{Document must be compiled using ocamltex}
     {Instead of compiling your document directly with latex, you need
@@ -796,12 +775,12 @@
 %
 % \OCamlTeX defines four macros intended to be called by the user.
 % Section~\ref{sec:ocaml-mac} details the implementation of two of them:
-% |\ocamlnewcommand| and |\ocamlrenewcommand|.
-% (Section~\ref{sec:ocaml-env} details the implementation of the other
-% two, |\ocamlnewenvironment| and |\ocamlrenewenvironment|.)  The goal is
-% for these two macros to behave \emph{exactly} like |\newcommand| and
-% |\renewcommand|, respectively, except that the author macros they in
-% turn define have OCaml bodies instead of \LaTeX{} bodies.
+% |\ocamlnewcommand| and |\ocamlrenewcommand|.  (Section~\ref{sec:ocaml-env}
+% details the implementation of the other two, |\ocamlnewenvironment| and
+% |\ocamlrenewenvironment|.)  The goal is for these two macros to behave
+% \emph{exactly} like |\newcommand| and |\renewcommand|, respectively, except
+% that the macros they define have OCaml bodies instead of \LaTeX{} bodies and
+% use a list of explicitly named arguments.
 %
 % The sequence of the operations defined in this section is as follows:
 %
@@ -820,11 +799,12 @@
 %   |\mlmac@oldbody|.  Finally, |\mlmac@newcommand@i| invokes
 %   |\mlmac@newcommand@ii|.
 %
-%   \item |\mlmac@newcommand@ii| stores the number of arguments to the
-%   user's macro (which may be zero) in |\mlmac@numargs|.  It then
-%   invokes |\mlmac@newcommand@iii@opt| if the first argument is
-%   supposed to be optional or |\mlmac@newcommand@iii@no@opt| if all
-%   arguments are supposed to be required.
+%   \item |\mlmac@newcommand@ii| counts the number of comma separated arguments
+%   to the user's macro (which may be zero) in |\mlmac@numargs|.  Additionally,
+%   it stores the actual argument names in |\mlmac@argsstr|.  It then invokes
+%   |\mlmac@newcommand@iii@opt| if the first argument is supposed to be
+%   optional or |\mlmac@newcommand@iii@no@opt| if all arguments are supposed to
+%   be required.
 %
 %   \item |\mlmac@newcommand@iii@opt| defines |\mlmac@defarg| as the
 %   default value of the optional argument.
@@ -833,17 +813,20 @@
 %
 %   \item |\mlmac@haveargs| stores the user's macro body (written in
 %   OCaml) verbatim in |\mlmac@ocamlcode|.  |\mlmac@haveargs| then invokes
-%   |\plmac@havecode|.
+%   |\mlmac@havecode|.
 %
-%   \item By the time |\mlmac@havecode| is invoked all of the
-%   information needed to define the user's macro is available.  Before
-%   defining a \LaTeX{} macro, however, |\mlmac@havecode| invokes
-%   |\mlmac@write@ocaml| to tell \ocamltex to define a OCaml subroutine
-%   with a name based on |\plmac@cleaned@macname| and the code contained
-%   in |\mlmac@ocamlcode|.  Figure~\ref{fig:tofile-define} illustrates
-%   the data that |\mlmac@write@perl| passes to \ocamltex.
+%   \item By the time |\mlmac@havecode| is invoked all of the information
+%   needed to define the user's macro is available.  Before defining a \LaTeX{}
+%   macro, however, |\mlmac@havecode| invokes |\mlmac@write@ocaml| to tell
+%   \ocamltex to define a OCaml subroutine with a name based on
+%   |\mlmac@cleaned@macname| and the code contained in |\mlmac@ocamlcode|.
+%   Figure~\ref{fig:tofile-define} illustrates the data that
+%   |\mlmac@write@perl| passes to \ocamltex.  Note that each line is implicitly
+%   followed by a carriage-return.
 %
-% \begin{figure}[htbp]
+% \begin{figure}[t]
+%   \hrule
+%   \vspace{0.5em}
 %   \centering
 %   \DeleteShortVerb\|
 %   \begin{tabular}{|l|}
@@ -852,21 +835,26 @@
 %     \verb|\mlmac@tag|             \\ \hline
 %     \verb|\mlmac@cleaned@macname| \\ \hline
 %     \verb|\mlmac@tag|             \\ \hline
-%     \verb|\mlmac@ocamlcode|        \\ \hline
+%     \verb|\mlmac@argsstr|         \\ \hline
+%     \verb|\mlmac@tag|             \\ \hline
+%     \verb|\mlmac@ocamlcode|       \\ \hline
 %   \end{tabular}
 %   \MakeShortVerb\|
-%   \caption{Data written to \texttt{\string\mlmac@tofile} to define a
-%     Perl subroutine}
+%   \caption{Data written to \texttt{\string\mlmac@tofile} to define an OCaml function}
 %   \label{fig:tofile-define}
+%   \vspace{0.5em}
+%   \hrule
 % \end{figure}
 %
 %   \item |\mlmac@havecode| invokes |\newcommand| or |\renewcommand|, as
-%   appropriate, defining the user's macro as a call to
-%   |\mlmac@write@ocaml|.  An invocation of the user's \LaTeX{} macro
-%   causes |\mlmac@write@ocaml| to pass the information shown in
-%   Figure~\ref{fig:tofile-use} to \ocamltex.
+%   appropriate, defining the user's macro as a call to |\mlmac@write@ocaml|.
+%   An invocation of the user's \LaTeX{} macro causes |\mlmac@write@ocaml| to
+%   pass the information shown in Figure~\ref{fig:tofile-use} to \ocamltex.
+%   Again, note that each line is implicitly followed by a carriage-return.
 %
-% \begin{figure}[htbp]
+% \begin{figure}[t]
+%   \hrule
+%   \vspace{0.5em}
 %   \centering
 %   \DeleteShortVerb\|
 %   \begin{tabular}{|l|}
@@ -887,6 +875,8 @@
 %   \caption{Data written to \texttt{\string\mlmac@tofile} to invoke a
 %     OCaml function}
 %   \label{fig:tofile-use}
+%   \vspace{0.5em}
+%   \hrule
 % \end{figure}
 %
 %   \item Whenever |\mlmac@write@ocaml| is invoked it writes its argument
@@ -900,7 +890,7 @@
 % document:\label{text:example-cmd}
 %
 % \begin{center}
-% |\ocamlnewcommand*{\example}[3][frobozz]{join("---", @_)}|
+% |\ocamlnewcommand{\example}[fst,snd]{ fst ^ "---" ^ snd }|
 % \end{center}
 %
 % \noindent
@@ -918,13 +908,13 @@
 %     Macro & \multicolumn{2}{l@{}}{Sample definition} \\
 %     \hline
 %     |\mlmac@command|          & |\newcommand|                    \\
-%     |\mlmac@starchar|         & |*|                              \\
 %     |\mlmac@macname|          & |\example|                       \\
 %     |\mlmac@cleaned@macname|  & |\example| & (catcode~11)        \\
 %     |\mlmac@oldbody|          & |\relax| & (presumably)          \\
-%     |\mlmac@numargs|          & |3|                              \\
+%     |\mlmac@numargs|          & |2|                              \\
+%     |\mlmac@argsstr|          & |fst,snd|                        \\
 %     |\mlmac@defarg|           & |frobozz|                        \\
-%     |\mlmac@perlcode|         & |join("---", @_)| & (catcode~11) \\
+%     |\mlmac@ocamlcode|         & |fst ^ "---" ^ snd| & (catcode~11) \\
 %     \hline
 %   \end{tabular}
 % \end{table}
@@ -947,14 +937,18 @@
 \def\ocalnewcommand{%
   \let\mlmac@command=\newcommand
   \let\mlmac@next=\relax
-  \@ifnextchar*{\mlmac@newcommand@i}{\mlmac@newcommand@i!}%
+  % Disable optional argument support for now
+  % \@ifnextchar*{\mlmac@newcommand@i}{\mlmac@newcommand@i!}%
+  \mlmac@newcommand@i!%
 }
 %    \end{macrocode}
 %    \begin{macrocode}
 \def\ocamlrenewcommand{%
   \let\mlmac@next=\relax
   \let\mlmac@command=\renewcommand
-  \@ifnextchar*{\mlmac@newcommand@i}{\mlmac@newcommand@i!}%
+  % Disable optional argument support for now
+  % \@ifnextchar*{\mlmac@newcommand@i}{\mlmac@newcommand@i!}%
+  \mlmac@newcommand@i!%
 }
 %    \end{macrocode}
 % \end{macro}
@@ -968,12 +962,12 @@
 % \begin{macro}{\mlmac@oldbody}
 % \begin{macro}{\mlmac@cleaned@macname}
 % If\label{page:newcommand-i} the user invoked
-% |\perl|[|re|]|newcommand*| then |\mlmac@newcommand@i| is passed a
+% |\ocaml|[|re|]|newcommand*| then |\mlmac@newcommand@i| is passed a
 % ``|*|'' and, in turn, defines |\mlmac@starchar| as ``|*|''.  If the
 % user invoked |\ocaml|[|re|]|newcommand| (no ``|*|'') then
 % |\mlmac@newcommand@i| is passed a ``|!|'' and, in turn, defines
 % |\mlmac@starchar| as \meta{empty}.  In either case,
-% |\mlmac@newcommand@i| defines |\plmac@macname| as the name of the
+% |\mlmac@newcommand@i| defines |\mlmac@macname| as the name of the
 % user's macro, |\mlmac@cleaned@macname| as a |\write|able
 % (i.e.,~category code~11) version of |\mlmac@macname|, and
 % |\mlmac@oldbody| and the previous definition of the user's macro.
@@ -990,7 +984,7 @@
   \let\mlmac@oldbody=#2\relax
   \expandafter\def\expandafter\mlmac@cleaned@macname\expandafter{%
     \expandafter\string\mlmac@macname}%
-  \@ifnextchar[{\mlmac@newcommand@ii}{\mlmac@newcommand@ii[0]}%]
+  \@ifnextchar[{\mlmac@newcommand@ii}{\mlmac@newcommand@ii[]}%]
 }
 %    \end{macrocode}
 % \end{macro}
@@ -1001,18 +995,27 @@
 %
 % \begin{macro}{\mlmac@newcommand@ii}
 % \begin{macro}{\mlmac@numargs}
-% |\mlmac@newcommand@i| invokes |\mlmac@newcommand@ii| with the number
-% of arguments to the user's macro in brackets.  |\mlmac@newcommand@ii|
-% stores that number in |\mlmac@numargs| and invokes
+% \begin{macro}{\mlmac@argsstr}
+% |\mlmac@newcommand@i| invokes |\mlmac@newcommand@ii| with comma separated
+% arguments to the user's macro in brackets.  |\mlmac@newcommand@ii| counts the
+% number of arguments, stores that number in |\mlmac@numargs| and stores the
+% comma separated arguments in |\mlmac@argsstr|, and invokes
 % |\mlmac@newcommand@iii@opt| if the first argument is to be optional or
 % |\mlmac@newcommand@iii@no@opt| if all arguments are to be mandatory.
 %    \begin{macrocode}
 \def\mlmac@newcommand@ii[#1]{%
-  \def\mlmac@numargs{#1}%
+  \begingroup
+    \count0=0 %
+    \let\comma=,% 
+    \getlength@i#1\end %
+    \xdef\mlmac@numargs{\number\count0}%
+    \xdef\mlmac@argsstr{#1}%
+  \endgroup
   \@ifnextchar[{\mlmac@newcommand@iii@opt}
                {\mlmac@newcommand@iii@no@opt}%]
 }
 %    \end{macrocode}
+% \end{macro}
 % \end{macro}
 % \end{macro}
 %
@@ -1062,12 +1065,12 @@
 % reset all category codes to their previous value, and continue
 % processing the user's macro definition.  How do we do that?  The
 % answer is to assign the upcoming text fragment to a token register
-% (|\mlmac@perlcode|) while an |\afterassignment| is in effect.  The
+% (|\mlmac@ocamlcode|) while an |\afterassignment| is in effect.  The
 % |\afterassignment| causes control to transfer to |\mlmac@havecode|
-% right after |\mlmac@perlcode| receives the macro body with all of the
+% right after |\mlmac@ocamlcode| receives the macro body with all of the
 % ``special'' characters made impotent.
 %    \begin{macrocode}
-\newtoks\mlmac@perlcode
+\newtoks\mlmac@ocamlcode
 %    \end{macrocode}
 %    \begin{macrocode}
 \def\mlmac@haveargs{%
@@ -1092,16 +1095,14 @@
 % Figure~\ref{fig:tofile-use}}|}|''.  This is easier said than done
 % because the number of arguments in the user's macro is not known
 % statically, yet we need to iterate over however many arguments there
-% are.  Because of this complexity, we will explain |\mlmac@perlcode|
+% are.  Because of this complexity, we will explain |\mlmac@ocamlcode|
 % piece-by-piece.
 %
 % \begin{macro}{\mlmac@sep}
 % Define a character to separate each of the items presented in
-% Figures~\ref{fig:tofile-define} and~\ref{fig:tofile-use}.  OCaml will
-% need to strip this off each argument.  For convenience in porting to
-% languages with less powerful string manipulation than Perl's, we
-% define |\mlmac@sep| as a carriage-return character of category code~11
-% (``letter'').
+% Figures~\ref{fig:tofile-define} and~\ref{fig:tofile-use}.  OCaml will need to
+% strip this off each argument.  We define |\mlmac@sep| as a carriage-return
+% character of category code~11 (``letter'').
 %    \begin{macrocode}
 {\catcode`\^^M=11\gdef\mlmac@sep{^^M}}
 %    \end{macrocode}
@@ -1111,7 +1112,7 @@
 % Define a loop variable that will iterate from |1| to the number of
 % arguments in the user's function, i.e.,~|\mlmac@numargs|.
 %    \begin{macrocode}
-\newcount\plmac@argnum
+\newcount\mlmac@argnum
 %    \end{macrocode}
 % \end{macro}
 %
@@ -1134,6 +1135,8 @@
     \noexpand\mlmac@write@ocaml{DEF\mlmac@sep
       \mlmac@tag\mlmac@sep
       \mlmac@cleaned@macname\mlmac@sep
+      \mlmac@tag\mlmac@sep
+      \mlmac@argsstr\mlmac@sep
       \mlmac@tag\mlmac@sep
       \the\mlmac@ocamlcode
     }%
@@ -1168,7 +1171,7 @@
 % |\mlmac@hash| to |\relax|.  This makes |\mlmac@hash| unexpandable, and
 % because it's not a ``|#|'', \TeX{} doesn't complain.  After
 % |\mlmac@body| has been extended to include |\mlmac@hash1|,
-% |\mlmac@hash2|,~\dots, |\mlmac@hash\plmac@numargs|, we then
+% |\mlmac@hash2|,~\dots, |\mlmac@hash\mlmac@numargs|, we then
 % |\let|-bind |\mlmac@hash| to |##|, which \TeX{} lets us do because
 % we're within a macro definition (|\mlmac@havecode|).  |\mlmac@body|
 % will then contain |#1|, |#2|,~\dots, |#\mlmac@numargs|, as desired.
@@ -1179,7 +1182,7 @@
     \ifnum\mlmac@numargs<\mlmac@argnum
     \else
       \edef\mlmac@body{%
-        \mlmac@body\mlmac@sep\mlmac@tag\mlmac@sep
+        \mlmac@body\mlmac@sep\mlmac@tag%
         \mlmac@hash\mlmac@hash\number\mlmac@argnum}%
       \advance\mlmac@argnum by 1%
   \repeat
@@ -1237,6 +1240,58 @@
 % \end{macro}
 % \end{macro}
 %
+% \subsubsection{Executing top-level OCaml expressions}
+%
+% \begin{macro}{\ocamlexec}
+% The code for executing top-level is very similar to that used to parse OCaml
+% macro bodies and for invoking OCaml macros.  Figure~\ref{fig:tofile-exec}
+% illustrates the data |\mlmac@write@ocaml| passes to \ocamltex.
+%
+% \begin{figure}[t]
+%   \hrule
+%   \vspace{0.5em}
+%   \centering
+%   \DeleteShortVerb\|
+%   \begin{tabular}{|l|}
+%     \hline
+%     \verb|EXEC|                   \\ \hline
+%     \verb|\mlmac@tag|             \\ \hline
+%     \verb|\mlmac@ocamlcode|       \\ \hline
+%   \end{tabular}
+%   \MakeShortVerb\|
+%   \caption{Data written to \texttt{\string\mlmac@tofile} to execute a
+%     top-level OCaml expression}
+%   \label{fig:tofile-exec}
+%   \vspace{0.5em}
+%   \hrule
+% \end{figure}
+%    \begin{macrocode}
+\def\ocamlexec{%
+  \let\mlmac@next=\relax
+  \begingroup
+    \let\do\@makeother\dospecials
+    \catcode`\^^M=\active
+    \newlinechar`\^^M
+    \endlinechar=`\^^M
+    \catcode`\{=1
+    \catcode`\}=2
+    \afterassignment\mlmac@exec@havecode
+    \global\mlmac@ocamlcode
+}
+{\catcode`\^^M=11\gdef\mlmac@sep{^^M}}
+\def\mlmac@exec@havecode{%
+  \endgroup%
+  \edef\mlmac@exec{%
+    \noexpand\mlmac@write@ocaml{EXEC\mlmac@sep
+      \mlmac@tag\mlmac@sep
+      \the\mlmac@ocamlcode
+    }%
+  }%
+  \mlmac@exec
+  \mlmac@next
+}
+%    \end{macrocode}
+% \end{macro}
 %
 % \subsubsection{Defining OCaml environments}
 % \label{sec:ocaml-env}
@@ -1276,14 +1331,18 @@
 \def\ocamlnewenvironment{%
   \let\mlmac@command=\newcommand
   \let\mlmac@next=\mlmac@end@environment
-  \@ifnextchar*{\mlmac@newenvironment@i}{\mlmac@newenvironment@i!}%
+  % Disable optional arguments for now 
+  % \@ifnextchar*{\mlmac@newenvironment@i}{\mlmac@newenvironment@i!}%
+  \mlmac@newenvironment@i!%
 }
 %    \end{macrocode}
 %    \begin{macrocode}
 \def\ocamlrenewenvironment{%
   \let\mlmac@command=\renewcommand
   \let\mlmac@next=\mlmac@end@environment
-  \@ifnextchar*{\mlmac@newenvironment@i}{\mlmac@newenvironment@i!}%
+  % Disable optional arguments for now
+  % \@ifnextchar*{\mlmac@newenvironment@i}{\mlmac@newenvironment@i!}%
+  \mlmac@newenvironment@i!%
 }
 %    \end{macrocode}
 % \end{macro}
@@ -1299,7 +1358,7 @@
 % \begin{macro}{\mlmac@cleaned@macname}
 % The |\mlmac@newenvironment@i| macro is analogous to
 % |\mlmac@newcommand@i|; see the description of
-% |\mlmac@newcommand@i|~\vpageref{page:newcommand-i} to understand the
+% |\mlmac@newcommand@i|~\pageref{page:newcommand-i} to understand the
 % basic structure.  The primary difference is that the environment name
 % (|#2|) is just text, not a control sequence.  We store this text in
 % |\mlmac@envname| to facilitate generating the names of the two macros
@@ -1355,7 +1414,7 @@
     \let\csname end\mlmac@envname\endcsname=\mlmac@end@macro
     \let\mlmac@next=\relax
   }%
-  \def\mlmac@macname{\plmac@end@macro}%
+  \def\mlmac@macname{\mlmac@end@macro}%
   \expandafter\let\expandafter\mlmac@oldbody\csname end\mlmac@envname\endcsname
   \expandafter\def\expandafter\mlmac@cleaned@macname\expandafter{%
     \expandafter\string\mlmac@macname}%
@@ -1512,8 +1571,8 @@
 % only macro that strictly requires \ocamltex.  Consequently, we wrap the
 % entire macro definition within a check for \ocamltex.
 %    \begin{macrocode}
-\ifnlmac@have@ocamltex
-  \newcommand{\nlmac@write@ocaml@i}[1]{%
+\ifmlmac@have@ocamltex
+  \newcommand{\mlmac@write@ocaml@i}[1]{%
 %    \end{macrocode}
 % The first step is to write argument |#1| to |\mlmac@tofile|:
 %    \begin{macrocode}
@@ -1619,7 +1678,7 @@
 %</package>
 % \fi
 %
-% ^^A  Keep track of the number of lines of code in perltex.
+% ^^A  Keep track of the number of lines of code in ocamltex.
 % \makeatletter
 % \immediate\write\@auxout{^^A
 %   \noexpand\gdef\noexpand\ocamlmaclines{\the\c@CodelineNo}}
@@ -1645,26 +1704,13 @@
 %
 % Because \ocamltex is generated without a \textsf{DocStrip}
 % preamble or postamble we have to manually include the desired
-% text as Perl comments.
+% text as OCaml comments.
 %
-%
-% \subsubsection{Perl modules and pragmas}
-%
-% We use |Safe| and |Opcode| to implement the secure sandbox,
-% |Getopt::Long| and |Pod::Usage| to parse the command line, and
-% various other modules and pragmas for miscellaneous things.
-%
-% \subsubsection{Variable declarations}
-%
-% With |use strict| in effect, we need to declare all of our variables.
-% For clarity, we separate our global-variable declarations into
-% variables corresponding to command-line options and other global
-% variables.
 %
 % \paragraph{Variables corresponding to command-line arguments}
-% \begin{perlmacro}{$latexprog}
-% \begin{perlmacro}{$runsafely}
-% \begin{perlmacro}{@permittedops}
+% \begin{ocamlmacro}{$latexprog}
+% \begin{ocamlmacro}{$runsafely}
+% \begin{ocamlmacro}{@permittedops}
 % |$latexprog| is the name of the \LaTeX{} executable
 % (e.g.,~``|latex|'').  If |$runsafely| is~|1| (the default), then the
 % user's Perl code runs in a secure sandbox; if it's |0|, then arbitrary
@@ -1672,22 +1718,22 @@
 % made available to the user's Perl code.  Valid values are described in
 % Perl's |Opcode| manual page.  \ocamltex's default is a list containing
 % only |:browse|.
-% \end{perlmacro}
-% \end{perlmacro}
-% \end{perlmacro}
+% \end{ocamlmacro}
+% \end{ocamlmacro}
+% \end{ocamlmacro}
 %
 % \paragraph{Other global variables}
-% \begin{perlmacro}{$progname}
-% \begin{perlmacro}{$jobname}
-% \begin{perlmacro}{@latexcmdline}
-% \begin{perlmacro}{$toperl}
-% \begin{perlmacro}{$fromperl}
-% \begin{perlmacro}{$toflag}
-% \begin{perlmacro}{$fromflag}
-% \begin{perlmacro}{$doneflag}
-% \begin{perlmacro}{$logfile}
-% \begin{perlmacro}{$sandbox}
-% \begin{perlmacro}{$latexpid}
+% \begin{ocamlmacro}{$progname}
+% \begin{ocamlmacro}{$jobname}
+% \begin{ocamlmacro}{@latexcmdline}
+% \begin{ocamlmacro}{$toperl}
+% \begin{ocamlmacro}{$fromperl}
+% \begin{ocamlmacro}{$toflag}
+% \begin{ocamlmacro}{$fromflag}
+% \begin{ocamlmacro}{$doneflag}
+% \begin{ocamlmacro}{$logfile}
+% \begin{ocamlmacro}{$sandbox}
+% \begin{ocamlmacro}{$latexpid}
 % |$progname| is the run-time name of the \ocamltex program.
 % |$jobname| is the base name of the user's |.tex| file, which defaults
 % to the \TeX{} default of |texput|.  |@latexcmdline| is the command
@@ -1702,17 +1748,17 @@
 % writes verbose execution information.  |$sandbox| is a secure sandbox
 % in which to run code that appeared in the \LaTeX{} document.
 % |$latexpid| is the process~ID of the |latex| process.
-% \end{perlmacro}
-% \end{perlmacro}
-% \end{perlmacro}
-% \end{perlmacro}
-% \end{perlmacro}
-% \end{perlmacro}
-% \end{perlmacro}
-% \end{perlmacro}
-% \end{perlmacro}
-% \end{perlmacro}
-% \end{perlmacro}
+% \end{ocamlmacro}
+% \end{ocamlmacro}
+% \end{ocamlmacro}
+% \end{ocamlmacro}
+% \end{ocamlmacro}
+% \end{ocamlmacro}
+% \end{ocamlmacro}
+% \end{ocamlmacro}
+% \end{ocamlmacro}
+% \end{ocamlmacro}
+% \end{ocamlmacro}
 %
 % \subsubsection{Command-line conversion}
 %
@@ -1727,20 +1773,20 @@
 % (|@ARGV|) because these are presumably |latex| options.
 %
 % \paragraph{Preparing a \LaTeX{} command line}
-% \begin{perlmacro}{$firstcmd}
-% \begin{perlmacro}{$option}
+% \begin{ocamlmacro}{$firstcmd}
+% \begin{ocamlmacro}{$option}
 % We start by searching |@ARGV| for the first string that does not start
 % with ``|-|'' or ``|\|''.  This string, which represents a filename, is
 % used to set |$jobname|.
-% \end{perlmacro}
-% \end{perlmacro}
+% \end{ocamlmacro}
+% \end{ocamlmacro}
 %
-% \begin{perlmacro}{$separator}
+% \begin{ocamlmacro}{$separator}
 % To avoid conflicts with the code and parameters passed to Perl from
 % \LaTeX{} (see Figure~\vref{fig:tofile-define} and
 % Figure~\vref{fig:tofile-use}) we define a separator string,
 % |$separator|, containing 20 random uppercase letters.
-% \end{perlmacro}
+% \end{ocamlmacro}
 %
 % Now that we have the name of the \LaTeX{} job (|$jobname|) we can
 % assign |$toperl|, |$fromperl|, |$toflag|, |$fromflag|, |$doneflag|,
@@ -1765,8 +1811,6 @@
 % repeatedly until the file is actually deleted.  This works around a
 % race condition that occurs in some filesystems in which file deletions
 % are executed somewhat lazily.
-% \changes{v1.0a}{2003/08/21}{Made all \texttt{unlink} calls wait for the
-%   file to actually disappear}
 %
 % \subsubsection{Communicating with \LaTeX{}}
 %
@@ -1774,37 +1818,32 @@
 % exits, the loop repeatedly reads Perl code from \LaTeX{}, evaluates
 % it, and returns the result as per the protocol described in
 % Figure~\vref{fig:comm-protocol}.
-% \changes{v1.0a}{2003/08/21}{Undefined \texttt{\string\string\string$/}
-%   only locally}
 %
-% \begin{perlmacro}{$awaitexists}
+% \begin{ocamlmacro}{$awaitexists}
 % We define a local subroutine |$awaitexists| which waits for a given
 % file to exist.  If |latex| exits while |$awaitexists| is waiting, then
 % \ocamltex cleans up and exits, too.
-% \changes{v1.0a}{2003/08/06}{Bug fix: Added ``\texttt{undef
-%   \$latexpid}'' to make the \texttt{END} block correctly return a
-%   status code of~0 on success}
-% \end{perlmacro}
+% \end{ocamlmacro}
 %
-% \begin{perlmacro}{$entirefile}
+% \begin{ocamlmacro}{$entirefile}
 % Wait for |$toflag| to exist.  When it does, this implies that
 % |$toperl| must exist as well.  We read the entire contents of
 % |$toperl| into the |$entirefile| variable and process it.
 % Figures~\ref{fig:tofile-define} and~\ref{fig:tofile-use} illustrate
 % the contents of |$toperl|.
-% \end{perlmacro}
+% \end{ocamlmacro}
 %
-% \begin{perlmacro}{$optag}
-% \begin{perlmacro}{$macroname}
-% \begin{perlmacro}{@otherstuff}
+% \begin{ocamlmacro}{$optag}
+% \begin{ocamlmacro}{$macroname}
+% \begin{ocamlmacro}{@otherstuff}
 % We split the contents of |$entirefile| into an operation tag (either
 % |DEF| or |USE|), the macro name, and everything else (|@otherstuff|).
 % If |$optag| is |DEF| then |@otherstuff| will contain the Perl code to
 % define.  If |$optag| is |USE| then |@otherstuff| will be a list of
 % subroutine arguments.
-% \end{perlmacro}
-% \end{perlmacro}
-% \end{perlmacro}
+% \end{ocamlmacro}
+% \end{ocamlmacro}
+% \end{ocamlmacro}
 %
 % We clean up the macro name by deleting all leading non-letters,
 % replacing all subsequent non-alphanumerics with ``|_|'', and
@@ -1815,7 +1854,7 @@
 % occurrence of ``|\|'' with ``|\\|'' and every occurrence of ``|'|''
 % with ``|\'|''.
 %
-% \begin{perlmacro}{$perlcode}
+% \begin{ocamlmacro}{$perlcode}
 % There are two possible values that can be assigned to |$perlcode|.  If
 % |$optag| is |DEF|, then |$perlcode| is made to contain a definition of
 % the user's subroutine, named |$macroname|.  If |$optag| is |USE|, then
@@ -1832,7 +1871,7 @@
 %   \DeleteShortVerb\|
 %   \begin{tabular}{l|l|}
 %     \cline{2-2}
-%     \LaTeX: & \verb|\perlnewcommand{\mymacro}[2]{%| \\
+%     \LaTeX: & \verb|\ocamlnewcommand{\mymacro}[2]{%| \\
 %             & \verb|  sprintf "Isn't $_[0] %s $_[1]?\n",| \\
 %             & \verb|    $_[0]>=$_[1] ? ">=" : "<"| \\
 %             & \verb|}| \\
@@ -1841,15 +1880,15 @@
 %     \multicolumn{1}{c}{} & \multicolumn{1}{c}{\Huge$\Downarrow$} \\
 %     \multicolumn{2}{c}{} \\
 %     \cline{2-2}
-%     Perl:   & \verb|sub latex_mymacro {| \\
+%     OCaml:   & \verb|sub latex_mymacro {| \\
 %             & \verb|  sprintf "Isn't $_[0] %s $_[1]?\n",| \\
 %             & \verb|    $_[0]>=$_[1] ? ">=" : "<"| \\
 %             & \verb|}| \\
 %     \cline{2-2}
 %   \end{tabular}
 %   \MakeShortVerb\|
-%   \caption{Conversion from \LaTeX{} to Perl (subroutine definition)}
-%   \label{fig:latex-perl-define}
+%   \caption{Conversion from \LaTeX{} to OCaml (subroutine definition)}
+%   \label{fig:latex-ocaml-define}
 % \end{figure}
 %
 % \begin{figure}[tbp]
@@ -1871,12 +1910,12 @@
 %   \label{fig:latex-perl-use}
 % \end{figure}
 %
-% \end{perlmacro}
+% \end{ocamlmacro}
 %
 % Log what we're about to evaluate.
 %
-% \begin{perlmacro}{$result}
-% \begin{perlmacro}{$msg}
+% \begin{ocamlmacro}{$result}
+% \begin{ocamlmacro}{$msg}
 % We're now ready to execute the user's code using the |$sandbox->reval|
 % function.  If a warning occurs we write it as a Perl comment to the
 % log file.  If an error occurs (i.e.,~|$@| is defined) we replace the
@@ -1888,22 +1927,22 @@
 % clarity of reading both warning and error messages, we elide the
 % string ``\texttt{at (eval} \meta{number}\texttt{) line}
 % \meta{number}''.
-% \end{perlmacro}
-% \end{perlmacro}
+% \end{ocamlmacro}
+% \end{ocamlmacro}
 %
 % Log the resulting \LaTeX{} code.
 %
 % We add |\endinput| to the generated \LaTeX{} code to suppress an
 % extraneous end-of-line character that \TeX{} would otherwise insert.
 %
-% Continuing the protocol described in Figure~\vref{fig:comm-protocol}
+% Continuing the protocol described in Figure~\ref{fig:comm-protocol}
 % we now write |$result| (which contains either the result of executing
 % the user's or a |\PackageError|) to the |$fromperl| file, delete
 % |$toflag|, |$toperl|, and |$doneflag|, and notify \LaTeX{} by touching
 % the |$fromflag| file.
 %
-% We have to perform one final \LaTeX-to-Perl synchronization step.
-% Otherwise, a subsequent |\perl|[|re|]|newcommand| would see that
+% We have to perform one final \LaTeX-to-OCaml synchronization step.
+% Otherwise, a subsequent |\ocaml|[|re|]|newcommand| would see that
 % |$fromflag| already exists and race ahead, finding that |$fromperl|
 % does not contain what it's supposed to.
 %
@@ -2047,7 +2086,8 @@ let cleanup () = ignore (List.map delete_file_exists (filelist ()))
 (* Prelude information sent to TeX *)
 let firstcmd () = 
     "\\makeatletter" ^ 
-    "\\def\\mlmac@tag{" ^ separator ^ "}" ^
+    "\\def\\mlmac@pid{0}" ^ (* FIX! *)
+    "\\def\\mlmac@tag{" ^ separator ^ "}" ^    
     "\\def\\mlmac@tofile{" ^ (!toocaml) ^ "}" ^
     "\\def\\mlmac@fromfile{" ^ (!fromocaml) ^ "}" ^
     "\\def\\mlmac@toflag{" ^ (!toflag) ^ "}" ^ 
@@ -2247,6 +2287,12 @@ let _ = main ()
 % \subsection{Differences between \OCamlTeX}
 % \label{sec:differences}
 %
+% \PerlTeX does not provide named arguments like \OCamlTeX does, instead
+% arguments are pushed onto the Perl stack.  \PerlTeX does not provide anything
+% equivalent to |\ocamlexec|, but it probably does not need such a capability
+% because, as far as I know, any valid Perl code may occur within a subroutine. 
+% \OCamlTeX does not yet provide optional argument support.
+%
 % Unlike \OCamlTeX, \PerlTeX executes the Perl code within a secure sandbox.
 % This means that potentially harmful Perl operations, such as |unlink|,
 % |rmdir|, and |system| will result in a run-time error.  Having a secure
@@ -2258,6 +2304,36 @@ let _ = main ()
 %
 % \subsection{Future work}
 % \label{sec:future}
+% 
+% \OCamlTeX is still under active development and there are several parts that
+% are either incomplete or would be very useful to have in future releases.
+% \begin{itemize}
+% \item \OCamlTeX's versions of |\ocaml|[|re|]|command| and
+% |\ocaml|[|re|]|environment| currently do not support optional arguments.
+% This should not require much modification.  This is probably best implemented
+% using OCaml's optional argument feature.
 %
+% \item \ocamltex does not currently implement or make use of the |\mlmac@pid|.
+%
+% \item \ocamltex depends upon the Caml Shell (CASH) package.  It might be
+% useful to eliminate this dependency to make \ocamltex slightly more portable.
+%
+% \item It would be useful to extend \ocamltex with data structures and library
+% functions for generating and manipulating \TeX\ data.  A ``\TeX\ monad''
+% implemented via the |pa_monad| package would be very useful for this.
+%
+% \end{itemize}
+%
+% \begin{thebibliography}{2}
+%
+% \bibitem{Ant}
+% Achim Blumensath. 
+% \newblock The Ant Typesetting System.
+% \newblock \url{find the url}.
+% \bibitem{OCaml}
+% Xavier Leroy.
+% \newblock The OCaml Programming Language.
+% \newblock \url{find the url}.
+% \end{thebibliography}
 % \Finale
 \endinput
