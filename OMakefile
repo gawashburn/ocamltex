@@ -1,0 +1,8 @@
+# Still need to finish
+
+ocamltex:
+	
+ocamltex.ml ocamltex.sty:
+	$(LATEX) ocamltex.ins
+
+.DEFAULT: ocamltex ocamltex.sty ocamltex.pdf
