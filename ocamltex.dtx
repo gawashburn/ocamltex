@@ -1953,7 +1953,6 @@
 % system resources.
 %
 %    \begin{macrocode}
-#!/usr/bin/env cash
 (*
 # vim:ft=ocaml 
 *)
@@ -1981,8 +1980,6 @@
 (* Initialize the top-level we are going to interact with *) 
 let () = Toploop.initialize_toplevel_env ();;
 
-(* Load the regular expression library *)
-#load "str.cma";;
 open Cash;;
 open Str;;
 
@@ -2160,7 +2157,8 @@ let process_input (logCh : out_channel) (data : string) : string =
                                             ("(* Defining OCaml function *)\n\n" ^ cmd ^ 
                                              "\n\n(***************************)\n") in
                                    ignore (eval cmd) ; ""
-                                 | _ -> error ("Bad input stream:" ^ data))) 
+                                 | _ -> error ("Bad input stream:" ^ data)) 
+                          | _ -> error ("This case should be impossible")) 
                     | _ -> error ("Bad input stream:" ^ data))
                  | "EXEC" -> 
                     let code = String.concat "" tail in
