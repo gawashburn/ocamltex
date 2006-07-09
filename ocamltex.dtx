@@ -234,7 +234,7 @@
 %        (if (j = mSize) then []
 %         else
 %          ((String.concat " & " (genRow 0 j mSize)) ^ "\\\\ \n")::
-            (genMatrix (j+1) mSize)) in
+%            (genMatrix (j+1) mSize)) in
 %    let sizeInt = (int_of_string size) in       
 %      ("\\[\n\\renewcommand{\\arraystretch}{1.3}\n") ^
 %      ("\\begin{array}{") ^ (String.make sizeInt 'c') ^ ("}\n") ^
