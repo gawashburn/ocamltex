@@ -1,8 +1,27 @@
-# Still need to finish
+# LaTeX configuration
+LATEX = pdflatex
 
-ocamltex:
+# OCaml configuration
+BYTE_ENABLED = true
+NATIVE_ENABLED = false
+CSTRLIBDIR = +/site-lib/cstr
+CASHLIBDIR = +/site-lib/cash
+PCRELIBDIR = +/site-lib/pcre
+OTLIBS = stdlib.cma camlp4.cma unix.cma cstr.cma pcre.cma str.cma toplevellib.cma cash.cma 
+OCAMLFLAGS += -I +camlp4 -I +site-lib/cstr -I +site-lib/pcre -I +site-lib/cash $(OTLIBS)
 	
-ocamltex.ml ocamltex.sty:
+ocamltex.ml ocamltex.sty: ocamltex.dtx ocamltex.ins
 	$(LATEX) ocamltex.ins
 
+ocamltex.pdf: ocamltex ocamltex.sty
+	$(LATEX) ocamltex.dtx
+
+OCamlProgram(ocamltex, ocamltex)
+
+
 .DEFAULT: ocamltex ocamltex.sty ocamltex.pdf
+
+.PHONY: clean
+
+clean:
+	$(RM) *.o *.aux *.log *.idx *.out *.cmo *.cmi *.cmx *.glo ocamltex.ml ocamltex.pdf ocamltex.sty ocamltex.run
