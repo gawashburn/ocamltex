@@ -38,6 +38,7 @@
          (Char.escaped strtChar)::(genNames (Char.chr ((Char.code (strtChar)) + 1)) (num - 1))) in
   let rec genHeaders names = 
       (match names with
+         | [] -> "impossible"
          | last::[] -> 
            "\\multicolumn{1}{c@{}}{" ^ 
            last ^ 
@@ -75,4 +76,5 @@ A sample substring of ``\str'' is ``\substr{\str}{6}{2}''.
      \rownum & 14 & 11 &  5 &  4
    \end{spreadsheet}
  \end{center}
+
 \end{document}

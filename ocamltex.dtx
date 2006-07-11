@@ -281,28 +281,32 @@
 %
 % \begin{verbatim}
 % \newcounter{ssrow}
-% \perlnewenvironment{spreadsheet}[1]{
-%   my $cols = $_[0];
-%   my $header = "A";
-%   my $tabular = "\\setcounter{ssrow}{1}\n";
-%   $tabular .= '\newcommand*{\rownum}{\thessrow\addtocounter{ssrow}{1}}' . "\n";
-%   $tabular .= '\begin{tabular}{@{}r|*{' . $cols . '}{r}@{}}' . "\n";
-%   $tabular .= '\\multicolumn{1}{@{}c}{} &' . "\n";
-%   foreach (1 .. $cols) {
-%     $tabular .= "\\multicolumn{1}{c";
-%     $tabular .= '@{}' if $_ == $cols;
-%     $tabular .= "}{" . $header++ . "}";
-%     if ($_ == $cols) {
-%       $tabular .= " \\\\ \\cline{2-" . ($cols+1) . "}"
-%     }
-%     else {
-%       $tabular .= " &";
-%     }
-%     $tabular .= "\n";
-%   }
-%   return $tabular;
+% \ocamlnewenvironment{spreadsheet}[size]{
+%   let sizeInt = int_of_string size in 
+%   let rec genNames strtChar num = 
+%       (if (num = 0) then []
+%        else 
+%          (Char.escaped strtChar)::
+%             (genNames (Char.chr ((Char.code (strtChar)) + 1)) 
+%                       (num - 1))) in
+%   let rec genHeaders names = 
+%       (match names with
+%          | [] -> "impossible"
+%          | last::[] -> 
+%            "\\multicolumn{1}{c@{}}{" ^ 
+%            last ^ 
+%            "}\\\\ \\cline{2-" ^
+%            (string_of_int (sizeInt + 1)) ^ "}\n"                     
+%          | name::tail ->
+%            ("\\multicolumn{1}{c}{" ^ name ^ "} &\n") ^ 
+%            (genHeaders tail)) in
+%   ("\\setcounter{ssrow}{1}\n" ^ 
+%    "\\newcommand*{\\rownum}{\\thessrow\\addtocounter{ssrow}{1}}\n" ^ 
+%    "\\begin{tabular}{@{}r|*{" ^ size ^ "}{r}@{}}\n" ^ 
+%    "\\multicolumn{1}{@{}c}{} &\n" ^ 
+%    (genHeaders (genNames 'A' sizeInt)))
 % }{
-%   return "\\end{tabular}\n";
+%   "\\end{tabular}\n";
 % }
 %
 % \begin{center}
@@ -1009,7 +1013,11 @@
     \let\comma=,% 
     \getlength@i#1\end %
     \xdef\mlmac@numargs{\number\count0}%
-    \xdef\mlmac@argsstr{#1}%
+    \ifnum\mlmac@numargs=0%
+      \xdef\mlmac@argsstr{()}%
+    \else%
+      \xdef\mlmac@argsstr{#1}%
+    \fi%  
   \endgroup
   \@ifnextchar[{\mlmac@newcommand@iii@opt}
                {\mlmac@newcommand@iii@no@opt}%]
@@ -1377,7 +1385,7 @@
   \expandafter\let\expandafter\mlmac@oldbody\mlmac@macname\relax
   \expandafter\def\expandafter\mlmac@cleaned@macname\expandafter{%
     \expandafter\string\mlmac@macname}%
-  \@ifnextchar[{\mlmac@newcommand@ii}{\mlmac@newcommand@ii[0]}%]
+  \@ifnextchar[{\mlmac@newcommand@ii}{\mlmac@newcommand@ii[]}%]
 }
 %    \end{macrocode}
 % \end{macro}
@@ -1414,11 +1422,12 @@
     \let\csname end\mlmac@envname\endcsname=\mlmac@end@macro
     \let\mlmac@next=\relax
   }%
-  \def\mlmac@macname{\mlmac@end@macro}%
+  \expandafter\def\expandafter\mlmac@macname\expandafter{end\mlmac@envname}%
   \expandafter\let\expandafter\mlmac@oldbody\csname end\mlmac@envname\endcsname
   \expandafter\def\expandafter\mlmac@cleaned@macname\expandafter{%
     \expandafter\string\mlmac@macname}%
-  \@ifnextchar[{\mlmac@newcommand@ii}{\mlmac@newcommand@ii[0]}%]
+  \def\mlmac@macname{\mlmac@end@macro}%
+  \@ifnextchar[{\mlmac@newcommand@ii}{\mlmac@newcommand@ii[]}%]
 }
 %    \end{macrocode}
 % \end{macro}
@@ -1428,7 +1437,7 @@
 % \end{macro}
 %
 %
-% \subsubsection{Communication between \LaTeX{} and OCaml}
+% \subsubsection{Communication between \LaTeX\ and OCaml}
 %
 % As shown in the previous section, when a document invokes
 % |\ocaml|[|re|]|newcommand| to define a macro, \ocamlmac defines the
@@ -2002,9 +2011,6 @@ let fromflag = ref ((!jobname) ^ ".ffml")
 let doneflag = ref ((!jobname) ^ ".dfml") 
 let logfile = ref ((!jobname) ^ ".lgml")
 
-(* Create a string reference used to communicate results from "eval" *)
-let evalData = ref ""
-
 (* By default use "latex" *)
 let latexprog = try ref (getenv "OCAMLTEX") with _ -> ref "latex" 
 
@@ -2128,6 +2134,7 @@ let rec awaitexists (file : string) pid =
 
 (* Process a message sent from TeX *)
 let process_input (logCh : out_channel) (data : string) : string =  
+    try
     let chunks = List.map chomp (split (regexp separator) data) in
       match chunks with
           | optarg::tail ->
@@ -2139,20 +2146,28 @@ let process_input (logCh : out_channel) (data : string) : string =
                      let mname = "latex_" ^ mname in
                      (match optarg with
                           | "USE" -> 
-                            let args = List.map (fun arg -> "\"" ^ arg ^ "\"") tail in
-                            let args' = String.concat " " args in
-                            let cmd = "let _ = evalData := " ^ mname ^ " " ^ args' ^ ";;" in
+                            let args = if (List.length tail = 0) then
+                                         "()"
+                                       else    
+                                         String.concat " " (List.map (fun arg -> "\"" ^ arg ^ "\"") tail) in
+                            let cmd = "let evalData = " ^ mname ^ " " ^ args ^ ";;" in
                             let () = write_string_out ~dst:logCh ("(* Using OCaml code *)\n\n" ^ cmd ^ 
                                                                 "\n\n(********************)\n") in
-                              ignore (eval cmd) ; !evalData
+                            let () = flush logCh in                                    
+                              ignore (eval cmd) ; Obj.magic (Toploop.getvalue "evalData")
                           | "DEF" -> 
                             (match tail with
                                  | (args_string::tail') ->
-                                   let args = split (regexp ",") args_string in
-                                   let args' = List.map (fun arg -> "(" ^ arg ^ " : string)") args in
-                                   let args'' = String.concat " " args' in
+                                   (* Remove extraneous whitespace *)
+                                   let cleaned_args = global_replace (regexp "[\\W\n]") "" args_string in
+                                   let args = if (cleaned_args = "()") then
+                                                "()"
+                                              else
+                                                String.concat " "
+                                                  (List.map (fun arg -> "(" ^ arg ^ " : string)") 
+                                                            (split (regexp ",") cleaned_args)) in
                                    let body = String.concat "" tail' in
-                                   let cmd = "let rec " ^ mname ^ " " ^ args'' ^ " : string = " ^ body ^ ";;" in 
+                                   let cmd = "let rec " ^ mname ^ " " ^ args ^ " : string = " ^ body ^ ";;" in 
                                    let () = write_string_out ~dst:logCh 
                                             ("(* Defining OCaml function *)\n\n" ^ cmd ^ 
                                              "\n\n(***************************)\n") in
@@ -2168,6 +2183,7 @@ let process_input (logCh : out_channel) (data : string) : string =
                        ignore (eval cmd) ; ""
                  | _ -> error ("Bad opcode:" ^ data)) 
           | _ -> error ("Bad input stream:" ^ data)
+    with err -> Errors.report_error Format.std_formatter err; ""
 
 (* Loop waiting for definition/evaluation requests *)
 let rec main_loop (logCh : out_channel) pid =

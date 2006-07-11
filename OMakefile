@@ -8,18 +8,19 @@ CSTRLIBDIR = +/site-lib/cstr
 CASHLIBDIR = +/site-lib/cash
 PCRELIBDIR = +/site-lib/pcre
 OTLIBS = stdlib.cma camlp4.cma unix.cma cstr.cma pcre.cma str.cma toplevellib.cma cash.cma 
-OCAMLFLAGS += -I +camlp4 -I +site-lib/cstr -I +site-lib/pcre -I +site-lib/cash $(OTLIBS)
+OCAMLFLAGS += -I +camlp4 -I +site-lib/cstr -I +site-lib/pcre -I +site-lib/cash $(OTLIBS) \
+ -I /usr/local/src/ocaml-3.09.2/driver/ errors.cmo
 	
 ocamltex.ml ocamltex.sty: ocamltex.dtx ocamltex.ins
 	$(LATEX) ocamltex.ins
 
-ocamltex.pdf: ocamltex ocamltex.sty
+ocamltex.pdf: ocamltex ocamltex.sty ocamltex.dtx
 	$(LATEX) ocamltex.dtx
 
 OCamlProgram(ocamltex, ocamltex)
 
 
-.DEFAULT: ocamltex ocamltex.sty ocamltex.pdf
+.DEFAULT: ocamltex ocamltex.sty 
 
 .PHONY: clean
 
