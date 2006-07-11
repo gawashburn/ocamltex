@@ -2,14 +2,17 @@
     <title>
         OCamlTeX $Id: .todo 14 2006-07-02 22:13:45Z geoffw $ to-do list
     </title>
+    <note priority="veryhigh" time="1148245705" done="1152580871">
+        Fix bug with ocamlnewenvironment.
+        <comment>
+            Was a bug with zero argument functions.
+        </comment>
+    </note>
     <note priority="veryhigh" time="1147016747">
         Use exceptions rather than "exit 0".
     </note>
     <note priority="veryhigh" time="1147016788">
         Better error reporting on bad OCaml code.
-    </note>
-    <note priority="veryhigh" time="1148245705">
-        Fix bug with ocamlnewenvironment.
     </note>
     <note priority="veryhigh" time="1148245717">
         Finish rewriting ocamltex.dtx.
@@ -17,16 +20,10 @@
     <note priority="veryhigh" time="1148245735">
         Finish writing README.txt.
     </note>
-    <note priority="high" time="1147016774">
-        Port to Haskell and Standard ML?
-    </note>
     <note priority="medium" time="1147016767">
         Write high-level library for creating "TeX" rather than always working with strings.
     </note>
     <note priority="medium" time="1151868113">
         Include process ids in temporary files.
-    </note>
-    <note priority="medium" time="1151870086">
-        Find Bitstream Vera package for LaTeX
     </note>
 </todo>
