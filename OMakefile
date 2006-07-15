@@ -29,7 +29,8 @@ OCamlProgram(ocamltex, ocamltex)
 .PHONY: clean test
 
 clean:
-	$(RM) *.o *.aux *.log *.idx *.out *.cmo *.cmi *.cmx *.glo ocamltex.ml *.pdf ocamltex.sty ocamltex.run *.??ml
+	$(RM) *.o *.aux *.log *.idx *.out *.cmo *.cmi *.cmx *.glo ocamltex.ml *.pdf ocamltex.sty \
+        ocamltex.run *.??ml ocamltex
 
 test: ocamltex ocamltex.sty
         $(OCAMLTEX) testing.tex
