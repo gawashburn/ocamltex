@@ -77,4 +77,12 @@ A sample substring of ``\str'' is ``\substr{\str}{6}{2}''.
    \end{spreadsheet}
  \end{center}
 
+\ocamlexec{let x = ref ""}
+\ocamlnewcommand{\setX}[arg]{ x := arg; "\\relax" }
+\ocamlnewcommand{\getX}{"$x$ was set to " ^ (!x) ^ "." }
+\setX{123}
+\getX
+\setX{456}
+\getX
+
 \end{document}

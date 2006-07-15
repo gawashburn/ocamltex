@@ -396,8 +396,8 @@
 %
 % \noindent|   |^^A
 % \begin{tabular}{@{}l@{}}
-%    |\ocamlexec{val x = ref ""}| \\
-%    |\ocamlnewcommand{\setX}[arg]{x := arg; "\relax"}| \\
+%    |\ocamlexec{let x = ref ""}| \\
+%    |\ocamlnewcommand{\setX}[arg]{x := arg; "\\relax"}| \\
 %    |\ocamlnewcommand{\getX}{"$x$ was set to " ^ (!x) ^ "."}| \\
 %    |\setX{123}| \\
 %    |\getX| \\
