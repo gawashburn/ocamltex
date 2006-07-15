@@ -85,7 +85,7 @@
 %
 %
 % \changes{v0.5}{2006/05/09}{Initial public release}
-% \changes{v0.6}{2004/05/21}{Switched to .dtx packaging}
+% \changes{v0.6}{2006/07/15}{Switched to .dtx packaging. Bug fixes}
 %
 % \GetFileInfo{ocamltex.sty}
 %
@@ -133,8 +133,7 @@
 % \makeatother
 %
 % \title{\OCamlTeX---defining {\LaTeX} macros in terms of OCaml code^^A
-%   \thanks{This document corresponds to \OCamlTeX~\fileversion, dated
-%   \filedate.}}
+%   \thanks{This document corresponds to \OCamlTeX~\fileversion.}}
 % \author{Geoffrey Washburn \\ \texttt{washburn@acm.org}}
 %
 % \maketitle
@@ -467,21 +466,21 @@
 %
 % \bigskip
 %
-% Clearly, Perl's programmability could complement \LaTeX{}'s typesetting
-% strengths.  {\bf perltex} is the tool that enables a symbiosis between
+% Clearly, OCaml's programmability could complement \LaTeX{}'s typesetting
+% strengths.  {\bf ocamltex} is the tool that enables a symbiosis between
 % the two systems.  All a user needs to do is compile a \LaTeX{} document
-% using {\bf perltex} instead of {\bf latex}.  ({\bf perltex} is actually a
+% using {\bf ocamltex} instead of {\bf latex}.  ({\bf ocamltex} is actually a
 % wrapper for {\bf latex}, so no {\bf latex} functionality is lost.)  If the
-% document includes a {\tt \char`\\usepackage\{perltex\}} in its preamble, then
-% {\tt \char`\\perlnewcommand} and {\tt \char`\\perlrenewcommand} macros will be made
+% document includes a {\tt \char`\\usepackage\{ocamltex\}} in its preamble, then
+% {\tt \char`\\ocamlnewcommand} and {\tt \char`\\ocamlrenewcommand} macros will be made
 % available.  These behave just like \LaTeX{}'s {\tt \char`\\newcommand} and
-% {\tt \char`\\renewcommand} except that the macro body contains Perl code instead
+% {\tt \char`\\renewcommand} except that the macro body contains OCaml code instead
 % of \LaTeX{} code.
 %
 % \subsection*{OPTIONS}%
 % \index{OPTIONS}
 %
-% {\bf perltex} accepts the following command-line options:
+% {\bf ocamltex} accepts the following command-line options:
 %
 % \begin{description}
 %
@@ -588,19 +587,19 @@
 %   \label{sec:license}
 %
 %   \begin{center}
-%   Copyright \textcopyright{} 2006 by Geoffrey Washburn \texttt{<washburn@acm.org>} \\
-%   Copyright \textcopyright{} 2004 by Scott Pakin \texttt{<scott+pt@pakin.org>}
+%   Copyright \textcopyright\ \osn{2006} by Geoffrey Washburn \texttt{<washburn@acm.org>} \\
+%   Copyright \textcopyright\ \osn{2004} by Scott Pakin \texttt{<scott+pt@pakin.org>}
 %   \end{center}
 %
 %   \providecommand{\url}[1]{\texttt{##1}}
 %
 %   \noindent
 %   These files may be distributed and/or modified under the conditions of
-%   the \LaTeX{} Project Public License, either version~1.2 of this
+%   the \LaTeX{} Project Public License, either version~\osn{1}.\osn{2} of this
 %   license or (at your option) any later version.  The latest version of
 %   this license is in \url{http://www.latex-project.org/lppl.txt} and
-%   version~1.2 or later is part of all distributions of \LaTeX{} version
-%   1999/12/01 or later.
+%   version~\osn{1}.\osn{2} or later is part of all distributions of \LaTeX{} version
+%   \osn{1999}/\osn{12}/\osn{01} or later.
 %
 %   \PrintChanges
 %   \PrintIndex
@@ -737,6 +736,7 @@
 % page~\pageref{page:define-dummies}---defines dummy versions of
 % |\ocaml|[|re|]|newcommand|, |\ocaml|[|re|]|newenvironment|, and |\ocamlexec|.
 %    \begin{macrocode}
+\RequirePackage{verbatim}
 \newif\ifmlmac@have@ocamltex
 \mlmac@have@ocamltextrue
 \@ifundefined{mlmac@pid}{\mlmac@have@ocamltexfalse}{}
@@ -1004,8 +1004,11 @@
 % arguments to the user's macro in brackets.  |\mlmac@newcommand@ii| counts the
 % number of arguments, stores that number in |\mlmac@numargs| and stores the
 % comma separated arguments in |\mlmac@argsstr|, and invokes
-% |\mlmac@newcommand@iii@opt| if the first argument is to be optional or
-% |\mlmac@newcommand@iii@no@opt| if all arguments are to be mandatory.
+% ^^A |\mlmac@newcommand@iii@opt| if the first argument is to be optional or
+% |\mlmac@newcommand@iii@no@opt|.  If there are zero arguments, |\mlmac@argsstr|
+% is set to be the OCaml unit value |()|.
+% ^^A if all arguments are to be mandatory.
+% 
 %    \begin{macrocode}
 \def\mlmac@newcommand@ii[#1]{%
   \begingroup
@@ -1697,13 +1700,12 @@
 % \subsection{\ocamltex}
 % \label{sec:ocamltex}
 %
-% \ocamltex is a wrapper script for |latex| (or any other \LaTeX{}
-% compiler).  It sets up client-server communication between \LaTeX{}
-% and OCaml, with \LaTeX{} as the client and OCaml as the server.  When a
-% \LaTeX{} document sends a piece of OCaml code to \ocamltex (with the
-% help of \ocamlmac, as detailed in Section~\ref{sec:ocamlmacros}),
-% \ocamltex executes it within a secure sandbox and transmits the
-% resulting \LaTeX{} code back to the document.
+% \ocamltex is a wrapper script for |latex| (or any other \LaTeX{} compiler).
+% It sets up client-server communication between \LaTeX\ and OCaml, with
+% \LaTeX\ as the client and OCaml as the server.  When a \LaTeX\ document sends
+% a piece of OCaml code to \ocamltex (with the help of \ocamlmac, as detailed
+% in Section~\ref{sec:ocamlmacros}), \ocamltex executes it and transmits the
+% resulting \LaTeX\ code back to the document.
 %
 % \iffalse
 %<*ocamltex>
@@ -1715,252 +1717,6 @@
 % preamble or postamble we have to manually include the desired
 % text as OCaml comments.
 %
-%
-% \paragraph{Variables corresponding to command-line arguments}
-% \begin{ocamlmacro}{$latexprog}
-% \begin{ocamlmacro}{$runsafely}
-% \begin{ocamlmacro}{@permittedops}
-% |$latexprog| is the name of the \LaTeX{} executable
-% (e.g.,~``|latex|'').  If |$runsafely| is~|1| (the default), then the
-% user's Perl code runs in a secure sandbox; if it's |0|, then arbitrary
-% Perl code is allowed to run.  |@permittedops| is a list of features
-% made available to the user's Perl code.  Valid values are described in
-% Perl's |Opcode| manual page.  \ocamltex's default is a list containing
-% only |:browse|.
-% \end{ocamlmacro}
-% \end{ocamlmacro}
-% \end{ocamlmacro}
-%
-% \paragraph{Other global variables}
-% \begin{ocamlmacro}{$progname}
-% \begin{ocamlmacro}{$jobname}
-% \begin{ocamlmacro}{@latexcmdline}
-% \begin{ocamlmacro}{$toperl}
-% \begin{ocamlmacro}{$fromperl}
-% \begin{ocamlmacro}{$toflag}
-% \begin{ocamlmacro}{$fromflag}
-% \begin{ocamlmacro}{$doneflag}
-% \begin{ocamlmacro}{$logfile}
-% \begin{ocamlmacro}{$sandbox}
-% \begin{ocamlmacro}{$latexpid}
-% |$progname| is the run-time name of the \ocamltex program.
-% |$jobname| is the base name of the user's |.tex| file, which defaults
-% to the \TeX{} default of |texput|.  |@latexcmdline| is the command
-% line to pass to the \LaTeX{} executable.  |$toperl| defines the
-% filename used for \LaTeX{}$\rightarrow$OCaml communication.
-% |$fromperl| defines the filename used for Perl$\rightarrow$\LaTeX{}
-% communication.  |$toflag| is the name of a file that will exist only
-% after \LaTeX{} creates |$tofile|.  |$fromflag| is the name of a file
-% that will exist only after Perl creates |$fromfile|.  |$doneflag| is
-% the name of a file that will exist only after OCaml deletes
-% |$fromflag|.  |$logfile| is the name of a log file to which \ocamltex
-% writes verbose execution information.  |$sandbox| is a secure sandbox
-% in which to run code that appeared in the \LaTeX{} document.
-% |$latexpid| is the process~ID of the |latex| process.
-% \end{ocamlmacro}
-% \end{ocamlmacro}
-% \end{ocamlmacro}
-% \end{ocamlmacro}
-% \end{ocamlmacro}
-% \end{ocamlmacro}
-% \end{ocamlmacro}
-% \end{ocamlmacro}
-% \end{ocamlmacro}
-% \end{ocamlmacro}
-% \end{ocamlmacro}
-%
-% \subsubsection{Command-line conversion}
-%
-% In this section, \ocamltex parses its own command line and prepares a
-% command line to pass to |latex|.
-%
-% \paragraph{Parsing \ocamltex's command line}
-% We first set |$latexprog| to be the contents of the environment
-% variable |PERLTEX| or the value ``|latex|'' if |PERLTEX| is not
-% specified.  We then use |Getopt::Long| to parse the command line,
-% leaving any parameters we don't recognize in the argument vector
-% (|@ARGV|) because these are presumably |latex| options.
-%
-% \paragraph{Preparing a \LaTeX{} command line}
-% \begin{ocamlmacro}{$firstcmd}
-% \begin{ocamlmacro}{$option}
-% We start by searching |@ARGV| for the first string that does not start
-% with ``|-|'' or ``|\|''.  This string, which represents a filename, is
-% used to set |$jobname|.
-% \end{ocamlmacro}
-% \end{ocamlmacro}
-%
-% \begin{ocamlmacro}{$separator}
-% To avoid conflicts with the code and parameters passed to Perl from
-% \LaTeX{} (see Figure~\vref{fig:tofile-define} and
-% Figure~\vref{fig:tofile-use}) we define a separator string,
-% |$separator|, containing 20 random uppercase letters.
-% \end{ocamlmacro}
-%
-% Now that we have the name of the \LaTeX{} job (|$jobname|) we can
-% assign |$toperl|, |$fromperl|, |$toflag|, |$fromflag|, |$doneflag|,
-% and |$logfile| in terms of |$jobname| plus a suitable extension.
-%
-% We now replace the filename of the |.tex| file passed to \ocamltex
-% with a |\def|inition of the separator character, |\def|initions of the
-% various files, and the original file with |\input| prepended if
-% necessary.
-%
-% \subsubsection{Launching \LaTeX}
-%
-% We start by deleting the |$toperl|, |$fromperl|, |$toflag|,
-% |$fromflag|, and |$doneflag| files, in case any of these were left
-% over from a previous (aborted) run.  We also create a log file,
-% |$logfile|.  As |@latexcmdline| contains the complete command line to
-% pass to |latex| we need only |fork| a new process and have the child
-% process overlay itself with |latex|.  \ocamltex continues running as
-% the parent.
-%
-% Note that here and elsewhere in \ocamltex, |unlink| is called
-% repeatedly until the file is actually deleted.  This works around a
-% race condition that occurs in some filesystems in which file deletions
-% are executed somewhat lazily.
-%
-% \subsubsection{Communicating with \LaTeX{}}
-%
-% The following code constitutes \ocamltex's main loop.  Until |latex|
-% exits, the loop repeatedly reads Perl code from \LaTeX{}, evaluates
-% it, and returns the result as per the protocol described in
-% Figure~\vref{fig:comm-protocol}.
-%
-% \begin{ocamlmacro}{$awaitexists}
-% We define a local subroutine |$awaitexists| which waits for a given
-% file to exist.  If |latex| exits while |$awaitexists| is waiting, then
-% \ocamltex cleans up and exits, too.
-% \end{ocamlmacro}
-%
-% \begin{ocamlmacro}{$entirefile}
-% Wait for |$toflag| to exist.  When it does, this implies that
-% |$toperl| must exist as well.  We read the entire contents of
-% |$toperl| into the |$entirefile| variable and process it.
-% Figures~\ref{fig:tofile-define} and~\ref{fig:tofile-use} illustrate
-% the contents of |$toperl|.
-% \end{ocamlmacro}
-%
-% \begin{ocamlmacro}{$optag}
-% \begin{ocamlmacro}{$macroname}
-% \begin{ocamlmacro}{@otherstuff}
-% We split the contents of |$entirefile| into an operation tag (either
-% |DEF| or |USE|), the macro name, and everything else (|@otherstuff|).
-% If |$optag| is |DEF| then |@otherstuff| will contain the Perl code to
-% define.  If |$optag| is |USE| then |@otherstuff| will be a list of
-% subroutine arguments.
-% \end{ocamlmacro}
-% \end{ocamlmacro}
-% \end{ocamlmacro}
-%
-% We clean up the macro name by deleting all leading non-letters,
-% replacing all subsequent non-alphanumerics with ``|_|'', and
-% prepending ``|latex_|'' to the macro name.
-%
-% If we're calling a subroutine, then we make the arguments more
-% palatable to Perl by single-quoting them and replacing every
-% occurrence of ``|\|'' with ``|\\|'' and every occurrence of ``|'|''
-% with ``|\'|''.
-%
-% \begin{ocamlmacro}{$perlcode}
-% There are two possible values that can be assigned to |$perlcode|.  If
-% |$optag| is |DEF|, then |$perlcode| is made to contain a definition of
-% the user's subroutine, named |$macroname|.  If |$optag| is |USE|, then
-% |$perlcode| becomes an invocation of |$macroname| which gets passed
-% all of the macro arguments.  Figure~\ref{fig:latex-perl-define}
-% presents an example of how the following code converts a \PerlTeX{}
-% macro definition into a Perl subroutine definition and
-% Figure~\ref{fig:latex-perl-use} presents an example of how the
-% following code converts a \PerlTeX{} macro invocation into a Perl
-% subroutine invocation.
-%
-% \begin{figure}[tbp]
-%   \centering
-%   \DeleteShortVerb\|
-%   \begin{tabular}{l|l|}
-%     \cline{2-2}
-%     \LaTeX: & \verb|\ocamlnewcommand{\mymacro}[2]{%| \\
-%             & \verb|  sprintf "Isn't $_[0] %s $_[1]?\n",| \\
-%             & \verb|    $_[0]>=$_[1] ? ">=" : "<"| \\
-%             & \verb|}| \\
-%     \cline{2-2}
-%     \multicolumn{2}{c}{} \\
-%     \multicolumn{1}{c}{} & \multicolumn{1}{c}{\Huge$\Downarrow$} \\
-%     \multicolumn{2}{c}{} \\
-%     \cline{2-2}
-%     OCaml:   & \verb|sub latex_mymacro {| \\
-%             & \verb|  sprintf "Isn't $_[0] %s $_[1]?\n",| \\
-%             & \verb|    $_[0]>=$_[1] ? ">=" : "<"| \\
-%             & \verb|}| \\
-%     \cline{2-2}
-%   \end{tabular}
-%   \MakeShortVerb\|
-%   \caption{Conversion from \LaTeX{} to OCaml (subroutine definition)}
-%   \label{fig:latex-ocaml-define}
-% \end{figure}
-%
-% \begin{figure}[tbp]
-%   \centering
-%   \DeleteShortVerb\|
-%   \begin{tabular}{l|l|}
-%     \cline{2-2}
-%     \LaTeX: & \verb|\mymacro{12}{34}| \\
-%     \cline{2-2}
-%     \multicolumn{2}{c}{} \\
-%     \multicolumn{1}{c}{} & \multicolumn{1}{c}{\Huge$\Downarrow$} \\
-%     \multicolumn{2}{c}{} \\
-%     \cline{2-2}
-%     Perl:   & \verb|latex_mymacro ('12', '34');| \\
-%     \cline{2-2}
-%   \end{tabular}
-%   \MakeShortVerb\|
-%   \caption{Conversion from \LaTeX{} to Perl (subroutine invocation)}
-%   \label{fig:latex-perl-use}
-% \end{figure}
-%
-% \end{ocamlmacro}
-%
-% Log what we're about to evaluate.
-%
-% \begin{ocamlmacro}{$result}
-% \begin{ocamlmacro}{$msg}
-% We're now ready to execute the user's code using the |$sandbox->reval|
-% function.  If a warning occurs we write it as a Perl comment to the
-% log file.  If an error occurs (i.e.,~|$@| is defined) we replace the
-% result (|$result|) with a call to \LaTeXe's |\PackageError| macro to
-% return a suitable error message.  We produce one error message for
-% sandbox policy violations (detected by the error message, |$@|,
-% containing the string ``\texttt{trapped by}'') and a different error
-% message for all other errors caused by executing the user's code.  For
-% clarity of reading both warning and error messages, we elide the
-% string ``\texttt{at (eval} \meta{number}\texttt{) line}
-% \meta{number}''.
-% \end{ocamlmacro}
-% \end{ocamlmacro}
-%
-% Log the resulting \LaTeX{} code.
-%
-% We add |\endinput| to the generated \LaTeX{} code to suppress an
-% extraneous end-of-line character that \TeX{} would otherwise insert.
-%
-% Continuing the protocol described in Figure~\ref{fig:comm-protocol}
-% we now write |$result| (which contains either the result of executing
-% the user's or a |\PackageError|) to the |$fromperl| file, delete
-% |$toflag|, |$toperl|, and |$doneflag|, and notify \LaTeX{} by touching
-% the |$fromflag| file.
-%
-% We have to perform one final \LaTeX-to-OCaml synchronization step.
-% Otherwise, a subsequent |\ocaml|[|re|]|newcommand| would see that
-% |$fromflag| already exists and race ahead, finding that |$fromperl|
-% does not contain what it's supposed to.
-%
-% \subsubsection{Final cleanup}
-%
-% If we exit abnormally we should do our best to kill the child |latex|
-% process so that it doesn't continue running forever, holding onto
-% system resources.
-%
 %    \begin{macrocode}
 (*
 # vim:ft=ocaml 
@@ -1971,7 +1727,7 @@
    code by Scott Pakin <scott+pt@pakin.org>                 *)
 
 (* 
- This is file `ocamltex', Version 0.5
+ This is file `ocamltex', Version 0.6
  
  Copyright (C) 2006 by Geoffrey Alan Washburn <washburn@acm.org>
  Copyright (C) 2004 by Scott Pakin <scott+pt@pakin.org>
@@ -2183,7 +1939,10 @@ let process_input (logCh : out_channel) (data : string) : string =
                        ignore (eval cmd) ; ""
                  | _ -> error ("Bad opcode:" ^ data)) 
           | _ -> error ("Bad input stream:" ^ data)
-    with err -> Errors.report_error Format.std_formatter err; ""
+    with err -> ignore (Format.flush_str_formatter ()); Errors.report_error Format.str_formatter err; 
+"%%%%\n\\begin{center}\n\\hrule\\vspace{1ex}\\begin{minipage}{0.9\\columnwidth}\n An error occurred will processing OCaml code:\n%\n\\begin{verbatim}\n" ^
+(Format.flush_str_formatter ()) ^ 
+"\n\\end{verbatim}\n\\end{minipage}\n\\hrule\\vspace{1ex}\\end{center}\n%%%%\n"
 
 (* Loop waiting for definition/evaluation requests *)
 let rec main_loop (logCh : out_channel) pid =
@@ -2229,7 +1988,7 @@ let rec file_loop files =
 (* Parse the command line and iterate over the input files *)
 let main () =
       let () = print_endline 
-               ("This is OCamlTeX, Version 0.5 (Copyright 2006 by Geoffrey Washburn)") in
+               ("This is OCamlTeX, Version 0.5 (Copyright (c) 2006 by Geoffrey Washburn)") in
       let args = parseArgs (List.tl (command_line ())) in
         if !showUsage then
           begin
@@ -2272,7 +2031,7 @@ let _ = main ()
 % known as some other languages.  Therefore, some users will therefore long for
 % a \meta{some-language-other-than-OCaml}\TeX\@.  Fortunately, porting
 % \OCamlTeX to use a different language is straightforward.  \OCamlTeX itself 
-% is actually derived from \PerlTeX by Scott Pakin.
+% is actually derived from \PerlTeX by Scott Pakin~\cite{PerlTeX}.
 %
 % \ocamltex will need to be rewritten in the target language, of course. I
 % found this fairly straightforward if the language provides reasonable support
@@ -2283,7 +2042,7 @@ let _ = main ()
 %
 % \begin{itemize}
 %   \item Rename \ocamlmac and \ocamltex (and choose a package name
-%   other than ``\OCamlTeX'') as per the \OCamlTeX license agreement
+%   other than ``\OCamlTeX'') as per the \OCamlTeX/\PerlTeX license agreement
 %   (Section~\ref{sec:license}).
 %
 %   \item In your replacement for \ocamlmac, replace all occurrences of
@@ -2313,15 +2072,21 @@ let _ = main ()
 % sandbox implies that it is safe to build \PerlTeX documents written by other
 % people without worrying about what they may do to your computer system.  It
 % would be great to have something like this for \OCamlTeX, but I currently am
-% not only simple way to provide sandboxing without building a custom OCaml
-% runtime.
+% not only simple way to provide sandboxing without building significantly more
+% customized OCaml runtime.
 %
 % \subsection{Future work}
 % \label{sec:future}
 % 
-% \OCamlTeX is still under active development and there are several parts that
-% are either incomplete or would be very useful to have in future releases.
+% \OCamlTeX is still under development and there are several parts that are
+% either incomplete or would be very useful to have in future releases.
 % \begin{itemize}
+%
+% \item The OCaml part of \OCamlTeX is not covered in any depth in this document. 
+% I would like to think it is self-explanitory, but that is unlikely. 
+%
+% \item
+%
 % \item \OCamlTeX's versions of |\ocaml|[|re|]|command| and
 % |\ocaml|[|re|]|environment| currently do not support optional arguments.
 % This should not require much modification.  This is probably best implemented
@@ -2329,7 +2094,7 @@ let _ = main ()
 %
 % \item \ocamltex does not currently implement or make use of the |\mlmac@pid|.
 %
-% \item \ocamltex depends upon the Caml Shell (CASH) package.  It might be
+% \item \ocamltex depends upon the Caml Shell (\textsc{cash}) package.  It might be
 % useful to eliminate this dependency to make \ocamltex slightly more portable.
 %
 % \item It would be useful to extend \ocamltex with data structures and library
@@ -2341,13 +2106,21 @@ let _ = main ()
 % \begin{thebibliography}{2}
 %
 % \bibitem{Ant}
-% Achim Blumensath. 
+% Blumensath, A.
 % \newblock The Ant Typesetting System.
 % \newblock \url{find the url}.
+%
 % \bibitem{OCaml}
-% Xavier Leroy.
-% \newblock The OCaml Programming Language.
-% \newblock \url{find the url}.
+% Leroy, X., Doligez, D., Garrigue, J., R\'emy, D., J\'er\^ome V.
+% \newblock \textit{The Objective Caml System: Documentation and User's Manual}. 
+% \newblock \osn{2000}.
+% \newblock Available from \url{http://caml.inria.fr}.
+
+% \bibitem{PerlTeX}
+% Pakin, S.
+% \newblock {\PerlTeX---defining \LaTeX\ macros in terms of Perl code}.
+% \newblock \osn{2004}.
+% \newblock Available from \textsc{ctan}.
 % \end{thebibliography}
 % \Finale
 \endinput

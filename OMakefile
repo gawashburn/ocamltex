@@ -1,8 +1,11 @@
-# LaTeX configuration
+# End user configuration
 LATEX = pdflatex
+OCAMLSRC=/local/src/ocaml-3.08.4
+
+# OCamlTeX configuration
+OCAMLTEX = ./ocamltex --latex=$(LATEX)
 
 # OCaml configuration
-OCAMLSRC=/local/src/ocaml-3.08.4
 BYTE_ENABLED = true
 NATIVE_ENABLED = false
 CSTRLIBDIR = +/site-lib/cstr
@@ -26,7 +29,7 @@ OCamlProgram(ocamltex, ocamltex)
 .PHONY: clean test
 
 clean:
-	$(RM) *.o *.aux *.log *.idx *.out *.cmo *.cmi *.cmx *.glo ocamltex.ml ocamltex.pdf ocamltex.sty ocamltex.run
+	$(RM) *.o *.aux *.log *.idx *.out *.cmo *.cmi *.cmx *.glo ocamltex.ml *.pdf ocamltex.sty ocamltex.run *.??ml
 
 test: ocamltex ocamltex.sty
-        ./ocamltex testing.tex
+        $(OCAMLTEX) testing.tex
