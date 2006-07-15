@@ -2,14 +2,15 @@
 LATEX = pdflatex
 
 # OCaml configuration
+OCAMLSRC=/local/src/ocaml-3.08.4
 BYTE_ENABLED = true
 NATIVE_ENABLED = false
 CSTRLIBDIR = +/site-lib/cstr
 CASHLIBDIR = +/site-lib/cash
 PCRELIBDIR = +/site-lib/pcre
-OTLIBS = stdlib.cma camlp4.cma unix.cma cstr.cma pcre.cma str.cma toplevellib.cma cash.cma 
-OCAMLFLAGS += -I +camlp4 -I +site-lib/cstr -I +site-lib/pcre -I +site-lib/cash $(OTLIBS) \
- -I /usr/local/src/ocaml-3.09.2/driver/ errors.cmo
+OTLIBS = stdlib.cma camlp4.cma unix.cma cstr.cma pcre.cma str.cma toplevellib.cma cash.cma errors.cmo
+OCAMLFLAGS += -I +camlp4 -I +site-lib/cstr -I +site-lib/pcre -I +site-lib/cash \
+ -I $(OCAMLSRC)/driver $(OTLIBS)
 	
 ocamltex.ml ocamltex.sty: ocamltex.dtx ocamltex.ins
 	$(LATEX) ocamltex.ins
@@ -22,7 +23,10 @@ OCamlProgram(ocamltex, ocamltex)
 
 .DEFAULT: ocamltex ocamltex.sty 
 
-.PHONY: clean
+.PHONY: clean test
 
 clean:
 	$(RM) *.o *.aux *.log *.idx *.out *.cmo *.cmi *.cmx *.glo ocamltex.ml ocamltex.pdf ocamltex.sty ocamltex.run
+
+test: ocamltex ocamltex.sty
+        ./ocamltex testing.tex
