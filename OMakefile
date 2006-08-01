@@ -1,6 +1,5 @@
 # End user configuration
 LATEX = pdflatex
-OCAMLSRC=/local/src/ocaml-3.08.4
 
 # OCamlTeX configuration
 OCAMLTEX = ./ocamltex --latex=$(LATEX)
@@ -11,9 +10,8 @@ NATIVE_ENABLED = false
 CSTRLIBDIR = +/site-lib/cstr
 CASHLIBDIR = +/site-lib/cash
 PCRELIBDIR = +/site-lib/pcre
-OTLIBS = stdlib.cma camlp4.cma unix.cma cstr.cma pcre.cma str.cma toplevellib.cma cash.cma errors.cmo
-OCAMLFLAGS += -I +camlp4 -I +site-lib/cstr -I +site-lib/pcre -I +site-lib/cash \
- -I $(OCAMLSRC)/driver $(OTLIBS)
+OTLIBS = stdlib.cma camlp4.cma unix.cma cstr.cma pcre.cma str.cma toplevellib.cma cash.cma errors.mli
+OCAMLFLAGS += -I +camlp4 -I +site-lib/cstr -I +site-lib/pcre -I +site-lib/cash $(OTLIBS)
 	
 ocamltex.ml ocamltex.sty: ocamltex.dtx ocamltex.ins
 	$(LATEX) ocamltex.ins
