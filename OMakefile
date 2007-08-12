@@ -7,12 +7,9 @@ OCAMLTEX = ./ocamltex --latex=$(LATEX)
 # OCaml configuration
 BYTE_ENABLED = true
 NATIVE_ENABLED = false
-CSTRLIBDIR = +/site-lib/cstr
-CASHLIBDIR = +/site-lib/cash
-PCRELIBDIR = +/site-lib/pcre
-OTLIBS = stdlib.cma camlp4.cma unix.cma cstr.cma pcre.cma str.cma toplevellib.cma cash.cma errors.mli
-OCAMLFLAGS += -I +camlp4 -I +site-lib/cstr -I +site-lib/pcre -I +site-lib/cash $(OTLIBS)
-	
+OTLIBS = stdlib.cma unix.cma str.cma toplevellib.cma errors.mli
+OCAMLFLAGS += $(OTLIBS)
+
 ocamltex.ml ocamltex.sty: ocamltex.dtx ocamltex.ins
 	$(LATEX) ocamltex.ins
 

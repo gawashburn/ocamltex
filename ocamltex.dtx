@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright (C) 2006 by Geoffrey Washburn <washburn@acm.org>
+% Copyright (C) 2007 by Geoffrey Washburn <washburn@acm.org>
 % Copyright (C) 2004 by Scott Pakin <scott+pt@pakin.org>
 % ------------------------------------------------------
 %
@@ -23,7 +23,7 @@
 %<package>\NeedsTeXFormat{LaTeX2e}[1999/12/01]
 %<package>\ProvidesPackage{ocamltex}
 %<*package>
-    [2006/07/02 v0.6 LaTeX macros for use with OCamlTeX]
+    [2007/08/12 v0.6 LaTeX macros for use with OCamlTeX]
 %</package>
 %
 %<*driver>
@@ -86,6 +86,7 @@
 %
 % \changes{v0.5}{2006/05/09}{Initial public release}
 % \changes{v0.6}{2006/07/15}{Switched to .dtx packaging. Bug fixes}
+% \changes{v0.7}{2007/08/12}{Merged changes by M. Colette Jean-Claude that eliminated the dependency on Caml Shell.}
 %
 % \GetFileInfo{ocamltex.sty}
 %
@@ -587,7 +588,7 @@
 %   \label{sec:license}
 %
 %   \begin{center}
-%   Copyright \textcopyright\ \osn{2006} by Geoffrey Washburn \texttt{<washburn@acm.org>} \\
+%   Copyright \textcopyright\ \osn{2007} by Geoffrey Washburn \texttt{<washburn@acm.org>} \\
 %   Copyright \textcopyright\ \osn{2004} by Scott Pakin \texttt{<scott+pt@pakin.org>}
 %   \end{center}
 %
@@ -1727,9 +1728,9 @@
    code by Scott Pakin <scott+pt@pakin.org>                 *)
 
 (* 
- This is file `ocamltex', Version 0.6
+ This is file `ocamltex', Version 0.7
  
- Copyright (C) 2006 by Geoffrey Alan Washburn <washburn@acm.org>
+ Copyright (C) 2007 by Geoffrey Alan Washburn <washburn@acm.org>
  Copyright (C) 2004 by Scott Pakin <scott+pt@pakin.org>
 
  This file may be distributed and/or modified under the conditions
@@ -1742,11 +1743,39 @@
  and version 1.2 or later is part of all distributions of LaTeX
  version 1999/12/01 or later. *)
 
+open Unix;;
+
 (* Initialize the top-level we are going to interact with *) 
 let () = Toploop.initialize_toplevel_env ();;
 
-open Cash;;
-open Str;;
+(********************************************************************)
+
+let is_file_existing_fn=Sys.file_exists;;
+
+let delete_file=Sys.remove;;
+
+let command_line ()=let c=Sys.argv in let l= ref [] in 
+  for i=0 to Array.length c - 1 do
+    l:=c.((Array.length c -1)- i)::!l;done; !l;;
+
+let write_string_out dst s= let _ = Unix.write dst s 0 (String.length s) in ();;
+
+let open_input_file (s:string)= Unix.openfile s [Unix.O_RDWR] 0o640;;
+
+let  open_output_file (s:string) flags = Unix.openfile s flags 0o640;;
+
+let string_of_in_channel chan=
+  let len = Unix.lseek chan 0 Unix.SEEK_END in
+  let s=String.create len in 
+  let _ = Unix.lseek chan 0 Unix.SEEK_SET in
+  let _ = Unix.read chan s 0 len in s;;
+
+let exec_path=execvp
+
+let save file string =
+  let channel = open_out file in
+    output_string channel string;
+    close_out channel
 
 (********************************************************************)
 
@@ -1784,7 +1813,7 @@ let error (msg : string) : 'a =
 
 (* basename *)
 let basename (fn : string) =
-  let parts = split (regexp dirsep) fn in
+  let parts = Str.split (Str.regexp dirsep) fn in
   let rec last (l : string list) : string = 
     (match l with 
      | []     -> (error "Argument to basename doesn't have a basecase?!")
@@ -1808,7 +1837,7 @@ let eval txt = let lb = (Lexing.from_string txt) in
  Toploop.execute_phrase true Format.str_formatter phr 
 
 (* Remove .tex suffix *)
-let remove_tex_suffix file = global_replace (regexp "\\.tex$") "" file
+let remove_tex_suffix file = Str.global_replace (Str.regexp "\\.tex$") "" file
 
 (********************************************************************)
 
@@ -1865,9 +1894,9 @@ let rec parseArgs (args : string list) : string list =
    | "--help"::t      -> (showUsage := true); parseArgs t
    | (h::t)            
      when 
-     (string_match (regexp "--latex=\\(.*\\)") h 0) -> 
+     (Str.string_match (Str.regexp "--latex=\\(.*\\)") h 0) -> 
       begin
-        latexprog := (matched_group 1 h); 
+        latexprog := (Str.matched_group 1 h); 
         parseArgs t
       end
    | h::t            -> h :: (parseArgs t))
@@ -1876,29 +1905,26 @@ exception FileDone
 
 (* Loop until the specified file exists, or the specified process exits *)
 let rec awaitexists (file : string) pid =
-    if (not (is_file_existing_fn file)) then 
-      begin
-        sleep 0;
-        try (match (wait ~wflags:[WNOHANG] pid) with 
-            | WEXITED pid' -> cleanup (); raise FileDone
-            | WSIGNALED pid' -> ()
-            | WSTOPPED pid' -> ())
-        with Child_not_ready -> awaitexists file pid   
-      end
-    else
-      ()
+     if (not (is_file_existing_fn file)) then
+       let () = try (match (Unix.waitpid [WNOHANG] pid) with
+                  | (_, Unix.WEXITED pid) -> cleanup (); raise FileDone
+                  | (_, _) -> ())
+                with Unix.Unix_error _ -> () in
+        awaitexists file pid
+     else
+       ()
 
 (* Process a message sent from TeX *)
-let process_input (logCh : out_channel) (data : string) : string =  
+let process_input (logCh : file_descr) (data : string) : string =  
     try
-    let chunks = List.map chomp (split (regexp separator) data) in
+    let chunks = List.map chomp (Str.split (Str.regexp separator) data) in
       match chunks with
           | optarg::tail ->
             (match optarg with
                  | ("USE"|"DEF") ->
                    (match tail with mname::tail ->
-                     let mname = global_replace (regexp "^[^A-Za-z]+") "" mname in
-                     let mname = global_replace (regexp "\\W") "_" mname in
+                     let mname = Str.global_replace (Str.regexp "^[^A-Za-z]+") "" mname in
+                     let mname = Str.global_replace (Str.regexp "\\W") "_" mname in
                      let mname = "latex_" ^ mname in
                      (match optarg with
                           | "USE" -> 
@@ -1907,24 +1933,23 @@ let process_input (logCh : out_channel) (data : string) : string =
                                        else    
                                          String.concat " " (List.map (fun arg -> "\"" ^ arg ^ "\"") tail) in
                             let cmd = "let evalData = " ^ mname ^ " " ^ args ^ ";;" in
-                            let () = write_string_out ~dst:logCh ("(* Using OCaml code *)\n\n" ^ cmd ^ 
+                            let () = write_string_out logCh ("(* Using OCaml code *)\n\n" ^ cmd ^ 
                                                                 "\n\n(********************)\n") in
-                            let () = flush logCh in                                    
                               ignore (eval cmd) ; Obj.magic (Toploop.getvalue "evalData")
                           | "DEF" -> 
                             (match tail with
                                  | (args_string::tail') ->
                                    (* Remove extraneous whitespace *)
-                                   let cleaned_args = global_replace (regexp "[\\W\n]") "" args_string in
+                                   let cleaned_args = Str.global_replace (Str.regexp "[\\W\n]") "" args_string in
                                    let args = if (cleaned_args = "()") then
                                                 "()"
                                               else
                                                 String.concat " "
                                                   (List.map (fun arg -> "(" ^ arg ^ " : string)") 
-                                                            (split (regexp ",") cleaned_args)) in
+                                                            (Str.split (Str.regexp ",") cleaned_args)) in
                                    let body = String.concat "" tail' in
                                    let cmd = "let rec " ^ mname ^ " " ^ args ^ " : string = " ^ body ^ ";;" in 
-                                   let () = write_string_out ~dst:logCh 
+                                   let () = write_string_out logCh 
                                             ("(* Defining OCaml function *)\n\n" ^ cmd ^ 
                                              "\n\n(***************************)\n") in
                                    ignore (eval cmd) ; ""
@@ -1934,7 +1959,7 @@ let process_input (logCh : out_channel) (data : string) : string =
                  | "EXEC" -> 
                     let code = String.concat "" tail in
                     let cmd = code ^ ";;" in
-                    let () = write_string_out ~dst:logCh ("(* Execing OCaml code *)\n\n" ^ cmd ^ 
+                    let () = write_string_out logCh ("(* Execing OCaml code *)\n\n" ^ cmd ^ 
                                                           "\n\n(**********************)\n") in
                        ignore (eval cmd) ; ""
                  | _ -> error ("Bad opcode:" ^ data)) 
@@ -1945,27 +1970,27 @@ let process_input (logCh : out_channel) (data : string) : string =
 "\n\\end{verbatim}\n\\end{minipage}\n\\hrule\\vspace{1ex}\\end{center}\n%%%%\n"
 
 (* Loop waiting for definition/evaluation requests *)
-let rec main_loop (logCh : out_channel) pid =
+let rec main_loop (logCh : file_descr) pid =
     let () = awaitexists (!toflag) pid in
     let toocamlCh = open_input_file (!toocaml) in
     let entirefile = string_of_in_channel toocamlCh in
-    let _ = close_in toocamlCh in 
+    let _ = Unix.close toocamlCh in 
     let result = process_input logCh entirefile in
     let result = result ^ "\\endinput" in
-    let () = write_string_out ~dst:logCh 
+    let () = write_string_out logCh 
                               ("(* OCaml evaluation result *)\n\n" ^ result ^ 
                                "\n\n(***************************)\n") in
     let () = delete_file_exists (!fromocaml) in
-    let fromocamlCh = open_output_file ~flags:[O_CREAT] (!fromocaml) in
-    let () = write_string_out ~dst:fromocamlCh result in
-    let _ = close_out fromocamlCh in
+    let fromocamlCh = open_output_file (!fromocaml) [Unix.O_RDWR;Unix.O_CREAT] in
+    let () = write_string_out fromocamlCh result in
+    let _ = Unix.close fromocamlCh in
     let () = delete_file_exists (!toflag) in
     let () = delete_file_exists (!toocaml) in
     let () = delete_file_exists (!doneflag) in
-    let _ = close_out (open_output_file ~flags:[O_CREAT] (!fromflag)) in
+    let _ = Unix.close (open_output_file  (!fromflag) [Unix.O_RDWR;Unix.O_CREAT]) in
     let () = awaitexists (!toocaml) pid in
     let () = delete_file_exists (!fromflag) in
-    let _ = close_out (open_output_file ~flags:[O_CREAT] (!doneflag)) in
+   let _ = Unix.close (open_output_file (!doneflag) [Unix.O_RDWR;Unix.O_CREAT]) in
       main_loop logCh pid
 
 (* Loop over the files supplied on the command-line *)
@@ -1977,18 +2002,19 @@ let rec file_loop files =
           let () = namefiles () in
           (* Clean up temporary files that might be hanging around from a previous run. *)
           let () = cleanup () in
-          let pid = (match fork () with
-                   | Some(latexpid) ->  latexpid
-                   | None -> exec_path (!latexprog) [firstcmd ()]) in
-          let logfileCh = open_output_file ~flags:[O_CREAT] (!logfile) in
+          let pid = fork () in
+          let () = (match pid with
+                   | 0 -> exec_path (!latexprog) [|"latex"; firstcmd()|]
+                   | p -> ()) in
+          let logfileCh = open_output_file (!logfile) [Unix.O_CREAT;Unix.O_RDWR] in
           let () = (try main_loop logfileCh pid with FileDone -> ()) in
-          let _ = close_out logfileCh in
+          let () = Unix.close logfileCh in
             file_loop t
 
 (* Parse the command line and iterate over the input files *)
 let main () =
       let () = print_endline 
-               ("This is OCamlTeX, Version 0.5 (Copyright (c) 2006 by Geoffrey Washburn)") in
+               ("This is OCamlTeX, Version 0.7 (Copyright (c) 2007 by Geoffrey Washburn)") in
       let args = parseArgs (List.tl (command_line ())) in
         if !showUsage then
           begin
