@@ -5,7 +5,7 @@ Installation instructions
 -------------------------
 
 OCamlTeX requires OCaml 3.08.4 or newer (including the source tree that it was
-built), Caml Shell (CASH), OMake, and TeX/LaTeX.  After you have all of these
+built), OMake, and TeX/LaTeX.  After you have all of these
 things installed and configured:    
 
 1. Edit OMakefile to meet your preferences and configuration.  
