@@ -1,4 +1,4 @@
-OCamlTeX 0.61
+OCamlTeX 0.7.1
 -------------
 
 Installation instructions
