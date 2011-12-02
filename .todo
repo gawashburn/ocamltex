@@ -1,0 +1,38 @@
+<todo version="0.1.19">
+    <title>
+        OCamlTeX $Id: .todo 14 2006-07-02 22:13:45Z geoffw $ to-do list
+    </title>
+    <note priority="veryhigh" time="1147016747" done="1152976523">
+        Use exceptions rather than "exit 0".
+        <comment>
+            Close enough for a new release at least.
+        </comment>
+    </note>
+    <note priority="veryhigh" time="1147016788" done="1152976499">
+        Better error reporting on bad OCaml code.
+        <comment>
+            Should now report sensible errors in the LaTeX output stream.
+        </comment>
+    </note>
+    <note priority="veryhigh" time="1148245705" done="1152580871">
+        Fix bug with ocamlnewenvironment.
+        <comment>
+            Was a bug with zero argument functions.
+        </comment>
+    </note>
+    <note priority="veryhigh" time="1148245735" done="1152976548">
+        Finish writing README.txt.
+        <comment>
+            Essentially done.
+        </comment>
+    </note>
+    <note priority="medium" time="1147016767">
+        Write high-level library for creating "TeX" rather than always working with strings.
+    </note>
+    <note priority="medium" time="1148245717">
+        Finish rewriting ocamltex.dtx.
+    </note>
+    <note priority="medium" time="1151868113">
+        Include process ids in temporary files.
+    </note>
+</todo>

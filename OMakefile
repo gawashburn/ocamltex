@@ -1,0 +1,31 @@
+# End user configuration
+LATEX = pdflatex
+
+# OCamlTeX configuration
+OCAMLTEX = ./ocamltex --latex=$(LATEX)
+
+# OCaml configuration
+BYTE_ENABLED = true
+NATIVE_ENABLED = false
+OTLIBS = stdlib.cma unix.cma str.cma toplevellib.cma errors.mli
+OCAMLFLAGS += $(OTLIBS)
+
+ocamltex.ml ocamltex.sty: ocamltex.dtx ocamltex.ins
+	$(LATEX) ocamltex.ins
+
+ocamltex.pdf: ocamltex ocamltex.sty ocamltex.dtx
+	$(LATEX) ocamltex.dtx
+
+OCamlProgram(ocamltex, ocamltex)
+
+
+.DEFAULT: ocamltex ocamltex.sty 
+
+.PHONY: clean test
+
+clean:
+	$(RM) *.o *.aux *.log *.idx *.out *.cmo *.cmi *.cmx *.glo ocamltex.ml *.pdf ocamltex.sty \
+        ocamltex.run *.??ml ocamltex
+
+test: ocamltex ocamltex.sty
+        $(OCAMLTEX) testing.tex

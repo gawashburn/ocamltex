@@ -1,0 +1,95 @@
+\documentclass{article}
+\usepackage{ocamltex}
+
+\ocamlnewcommand{\substr}[str,strt,len]{
+  String.sub str (int_of_string strt) (int_of_string len)
+}
+
+\ocamlnewcommand{\reversewords}[words]{
+  String.concat " "(List.rev (Str.split (Str.regexp " ") words))
+}
+
+\ocamlnewcommand{\hilbertmatrix}[size]{
+ let entry i j = 
+     (if (i + j) > 0 then 
+        "\\frac{1}{" ^ (string_of_int (i + j + 1)) ^ "}"
+      else "1") in
+ let rec genRow i j len = 
+     (if (len = 0) then [] 
+      else (entry i j)::(genRow (i+1) j (len-1))) in
+ let rec genMatrix j mSize = 
+     (if (j = mSize) then []
+      else
+       ((String.concat " & " (genRow 0 j mSize)) ^ "\\\\ \n")::(genMatrix (j+1) mSize)) in
+ let sizeInt = (int_of_string size) in       
+   ("\\[\n\\renewcommand{\\arraystretch}{1.3}\n") ^
+   ("\\begin{array}{") ^ (String.make sizeInt 'c') ^ ("}\n") ^
+   (String.concat "\n" (genMatrix 0 sizeInt)) ^ 
+   ("\\end{array}\n\\]")
+}
+
+
+\newcounter{ssrow}
+\ocamlnewenvironment{spreadsheet}[size]{
+  let sizeInt = int_of_string size in 
+  let rec genNames strtChar num = 
+      (if (num = 0) then []
+       else 
+         (Char.escaped strtChar)::(genNames (Char.chr ((Char.code (strtChar)) + 1)) (num - 1))) in
+  let rec genHeaders names = 
+      (match names with
+         | [] -> "impossible"
+         | last::[] -> 
+           "\\multicolumn{1}{c@{}}{" ^ 
+           last ^ 
+           "}\\\\ \\cline{2-" ^
+           (string_of_int (sizeInt + 1)) ^ "}\n"                     
+         | name::tail ->
+           ("\\multicolumn{1}{c}{" ^ name ^ "} &\n") ^ 
+           (genHeaders tail)) in
+  ("\\setcounter{ssrow}{1}\n" ^ 
+   "\\newcommand*{\\rownum}{\\thessrow\\addtocounter{ssrow}{1}}\n" ^ 
+   "\\begin{tabular}{@{}r|*{" ^ size ^ "}{r}@{}}\n" ^ 
+   "\\multicolumn{1}{@{}c}{} &\n" ^ 
+   (genHeaders (genNames 'A' sizeInt)))
+}{
+  "\\end{tabular}\n";
+}
+
+
+
+\begin{document}
+
+\reversewords{Try doing this without OCaml!}
+
+\newcommand{\str}{uniformly}
+
+A sample substring of ``\str'' is ``\substr{\str}{6}{2}''.
+
+\hilbertmatrix{15}
+
+ \begin{center}
+   \begin{spreadsheet}{4}
+     \rownum &  1 &  8 & 10 & 15 \\
+     \rownum & 12 & 13 &  3 &  6 \\
+     \rownum &  7 &  2 & 16 &  9 \\
+     \rownum & 14 & 11 &  5 &  4
+   \end{spreadsheet}
+ \end{center}
+
+\ocamlexec{let x = ref ""}
+\ocamlnewcommand{\setX}[arg]{ x := arg; "\\relax" }
+\ocamlnewcommand{\getX}{"$x$ was set to " ^ (!x) ^ "." }
+\setX{123}
+\getX
+\setX{456}
+\getX
+
+Testing error reporting.  Tries executing:
+\begin{verbatim}
+\ocamlexec{let () = 5}
+\end{verbatim}
+
+\ocamlexec{let () = 5}
+
+\end{document}
